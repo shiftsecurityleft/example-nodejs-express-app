@@ -49,7 +49,10 @@ build_nodejs:
 snyk_scan:
   stage: test
   script:
+    - set -x
     - runScaScan app
+    - ls -l
+    - mv scascan-*.json ${TEST_RESULTS}/
   artifacts:
     paths:
       - test-results/scascan-*.json
