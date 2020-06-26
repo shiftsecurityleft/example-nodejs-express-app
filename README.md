@@ -1,4 +1,4 @@
-# Demo AWS S3 bucket Terraform
+# Demo AWS S3 bucket Terraform TEST
 
 Include a sample Terraform which creates encrypted and private S3 bucket on AWS with logging enabled.
 
