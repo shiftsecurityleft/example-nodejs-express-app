@@ -11,8 +11,6 @@ stages:
   - deploy
 
 build_nodejs:
-  only:
-    - /^feature\/.*$/
   stage: build
   # Cache modules in between jobs
   cache:
@@ -45,8 +43,6 @@ build_nodejs:
     expire_in: 1 week
 
 snyk_scan:
-  only:
-    - /^feature\/.*$/
   stage: test
   script:
     - runScaScan app
@@ -56,8 +52,6 @@ snyk_scan:
     expire_in: 1 week
 
 #sonar_scan:
-#  only:
-#    - /^feature\/.*$/
 #  stage: test
 #  services:
 #    - docker:dind
@@ -73,8 +67,6 @@ snyk_scan:
 #    expire_in: 1 week
 
 code_quality:
-  only:
-    - /^feature\/.*$/
   stage: test
   image: docker:stable
   variables:
