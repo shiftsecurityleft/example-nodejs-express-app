@@ -4,6 +4,8 @@ image: registry.hub.docker.com/evsyk/infrapipe:latest
 before_script:
   - |
     [ -x "$(command -v terraform)" ] && terraform --version
+  - TEST_RESULTS=$(pwd)/test-results
+  - mkdir -p ${TEST_RESULTS}
 
 stages:
   - build
@@ -23,14 +25,16 @@ build_nodejs:
     - |
       nvm install 8.12.0
       nvm use 8.12.0
+    - SCAN_RESULT=npmaudit-${REPO_NAME}-${REPO_BRANCH_ENCODED}-${REPO_COMMIT_HASH:0:7}-${PIPELINE_BUILD_NUM}.json        
     - cd app
     #- npm ci --cache .npm --prefer-offline
     - echo "${REPO_COMMIT_HASH}" > public/status
     - npm install -g cross-env
     - npm install
-    - SCAN_RESULT=npmaudit-${REPO_NAME}-${REPO_BRANCH_ENCODED}-${REPO_COMMIT_HASH:0:7}-${PIPELINE_BUILD_NUM}.json        
     - npm audit --json > ${SCAN_RESULT} || tlog INFO "Ignoring NPM vulnerabilities..."
     - yqc r ${SCAN_RESULT}
+    - ls -l
+    - mv ${SCAN_RESULT} ${TEST_RESULTS}/
     #- uploadScanResult ${SCAN_RESULT}
     #- npm run test
     - npm run build
@@ -39,7 +43,7 @@ build_nodejs:
     #- CI=true JEST_JUNIT_OUTPUT="./artifacts/jest-junit.xml" yarn test --testResultsProcessor=jest-junit
   artifacts:
     paths:
-      - npmaudit-*.json
+      - test-results/npmaudit-*.json
     expire_in: 1 week
 
 snyk_scan:
@@ -48,7 +52,7 @@ snyk_scan:
     - runScaScan app
   artifacts:
     paths:
-      - scascan-*.json
+      - test-results/scascan-*.json
     expire_in: 1 week
 
 #sonar_scan:
@@ -71,7 +75,7 @@ code_quality:
   image: docker:stable
   variables:
     DOCKER_DRIVER: overlay2
-    SP_VERSION: 0.85.6
+    SP_VERSION: 0.85.10
   allow_failure: true
   services:
     - docker:stable-dind
@@ -82,9 +86,11 @@ code_quality:
         --volume "$PWD":/code
         --volume /var/run/docker.sock:/var/run/docker.sock
         "registry.gitlab.com/gitlab-org/ci-cd/codequality:$SP_VERSION" /code
+    - ls -l
+    - mv gl-*.json ${TEST_RESULTS}/
   artifacts:
     reports:
-      codequality: gl-code-quality-report.json
+      codequality: test-results/gl-*.json
 
 run_terraform:
   only:
