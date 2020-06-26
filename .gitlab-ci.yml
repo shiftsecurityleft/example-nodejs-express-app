@@ -1,0 +1,127 @@
+#image: registry.gitlab.com/shiftsecurityleft/infrapipe/infrapipe-demo:v0.2
+image: registry.hub.docker.com/evsyk/infrapipe:latest
+
+before_script:
+  - |
+    [ -x "$(command -v terraform)" ] && terraform --version
+
+stages:
+  - build
+  - test
+  - deploy
+
+build_nodejs:
+  only:
+    - /^feature\/.*$/
+  stage: build
+  # Cache modules in between jobs
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+    - .npm/
+  script:
+    - source /root/.nvm/nvm.sh
+    - tlog INFO "MANIFEST_VER = ${MANIFEST_VER}"
+    - |
+      nvm install 8.12.0
+      nvm use 8.12.0
+    - cd app
+    #- npm ci --cache .npm --prefer-offline
+    - echo "${REPO_COMMIT_HASH}" > public/status
+    - npm install -g cross-env
+    - npm install
+    - SCAN_RESULT=npmaudit-${REPO_NAME}-${REPO_BRANCH_ENCODED}-${REPO_COMMIT_HASH:0:7}-${PIPELINE_BUILD_NUM}.json        
+    - npm audit --json > ${SCAN_RESULT} || tlog INFO "Ignoring NPM vulnerabilities..."
+    - yqc r ${SCAN_RESULT}
+    #- uploadScanResult ${SCAN_RESULT}
+    #- npm run test
+    - npm run build
+    #- npm test
+    #- ./node_modules/.bin/eslint src --ext .js --format junit -o ./artifacts/js-lint-results.xml
+    #- CI=true JEST_JUNIT_OUTPUT="./artifacts/jest-junit.xml" yarn test --testResultsProcessor=jest-junit
+  artifacts:
+    paths:
+      - npmaudit-*.json
+    expire_in: 1 week
+
+snyk_scan:
+  only:
+    - /^feature\/.*$/
+  stage: test
+  script:
+    - runScaScan app
+  artifacts:
+    paths:
+      - scascan-*.json
+    expire_in: 1 week
+
+#sonar_scan:
+#  only:
+#    - /^feature\/.*$/
+#  stage: test
+#  services:
+#    - docker:dind
+#  variables:
+#    # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
+#    DOCKER_HOST: tcp://docker:2376
+#    DOCKER_TLS_CERTDIR: "/certs"
+#  script:
+#    - cd examples/sample-nodejs-react-app
+#    - runSastScan app
+#  artifacts:
+#    paths:
+#      - sastscan-*.json
+#    expire_in: 1 week
+
+code_quality:
+  only:
+    - /^feature\/.*$/
+  stage: test
+  image: docker:stable
+  variables:
+    DOCKER_DRIVER: overlay2
+    SP_VERSION: 0.85.6
+  allow_failure: true
+  services:
+    - docker:stable-dind
+  script:
+    - cd app
+    - docker run
+        --env SOURCE_CODE="$PWD"
+        --volume "$PWD":/code
+        --volume /var/run/docker.sock:/var/run/docker.sock
+        "registry.gitlab.com/gitlab-org/ci-cd/codequality:$SP_VERSION" /code
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
+
+run_terraform:
+  only:
+    - /^tf-.*$/
+  stage: deploy
+  environment:
+    name: terraform/$CI_COMMIT_REF_NAME
+    on_stop: destroy_terraform
+  script:
+    - cd examples/terraform-sample-s3-bucket
+    - export LOGGER_LVL=DEBUG
+    - set -x
+    #- export TF_VAR_CI_AWSENV=DEV
+    #- export CI_AWSENV=DEV
+    - runTerraformByComment
+
+destroy_terraform:
+  when: manual
+  only:
+    - /^tf-.*$/
+  stage: deploy
+  environment:
+    name: terraform/$CI_COMMIT_REF_NAME
+    action: stop
+  script:
+    - export REMINDER=${REPO_BRANCH#*-}  # remove "tf-"
+    - export AWSENV=${REMINDER%%-*}
+    - doTerraform destroy
+
+
+
