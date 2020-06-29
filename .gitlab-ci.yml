@@ -107,16 +107,13 @@ build_scan_upload_docker:
     - /^tf-.*$/
   stage: deploy
   variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"
-    SP_VERSION: 0.85.10
   script:
     - buildDockerImage
     #- runCvaScan ${REPO_NAME}:${REPO_COMMIT_HASH:0:7} ./Dockerfile
     - uploadToEcrInTargetEnv
   services:
-    - docker
+    - docker:19.03.11-dind
 
 deploy_app:
   except:
