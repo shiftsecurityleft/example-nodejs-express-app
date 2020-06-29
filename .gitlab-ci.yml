@@ -116,8 +116,6 @@ build_scan_upload_docker:
     - uploadToEcrInTargetEnv
   services:
     - docker
-  caches:
-    - docker
 
 deploy_app:
   except:
