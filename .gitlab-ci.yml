@@ -13,6 +13,9 @@ stages:
   - deploy
 
 build_nodejs:
+  only:
+    except:
+      - /^tf-.*$/
   stage: build
   # Cache modules in between jobs
   cache:
@@ -47,6 +50,9 @@ build_nodejs:
     expire_in: 1 week
 
 snyk_scan:
+  only:
+    except:
+      - /^tf-.*$/
   stage: test
   script:
     - set -x
@@ -74,6 +80,9 @@ snyk_scan:
 #    expire_in: 1 week
 
 code_quality:
+  only:
+    except:
+      - /^tf-.*$/
   stage: test
   image: docker:stable
   variables:
@@ -95,6 +104,52 @@ code_quality:
     reports:
       codequality: test-results/gl-*.json
 
+# Deployment stages
+build_scan_upload_docker:
+  only:
+    except:
+      - /^tf-.*$/
+  stage: deploy
+  image: docker:stable
+  variables:
+    DOCKER_DRIVER: overlay2
+    SP_VERSION: 0.85.10
+  script:
+    - buildDockerImage
+    #- runCvaScan ${REPO_NAME}:${REPO_COMMIT_HASH:0:7} ./Dockerfile
+    - uploadToEcrInTargetEnv
+  services:
+    - docker
+  caches:
+    - docker
+
+deploy_app:
+  only:
+    except:
+      - /^tf-.*$/
+  stage: deploy
+  script:
+    - deployEcs apply terraform/main
+    #- registerAppOnOkta
+  artifacts: # Artifacts defined here are stored so that they can be accessed in the subsequent steps.
+    report:
+      - terraform
+
+destroy_app:
+  only:
+    except:
+      - /^tf-.*$/
+  stage: deploy
+  script:
+    - |
+      if [[ -z ${BITBUCKET_PR_ID} ]] || ([[ ! -z ${BITBUCKET_PR_ID} ]] && [[ "$(getPostfixBasedOnBranchName)" = "-${APP_BRANCH_UUID}" ]]); then
+        deployEcs destroy terraform/main
+      fi
+  artifacts: # Artifacts defined here are stored so that they can be accessed in the subsequent steps.
+    report:
+      - terraform
+
+## Running Terraform on tf-* branch 
 run_terraform:
   only:
     - /^tf-.*$/
