@@ -13,9 +13,8 @@ stages:
   - deploy
 
 build_nodejs:
-  only:
-    except:
-      - /^tf-.*$/
+  except:
+    - /^tf-.*$/
   stage: build
   # Cache modules in between jobs
   cache:
@@ -50,9 +49,8 @@ build_nodejs:
     expire_in: 1 week
 
 snyk_scan:
-  only:
-    except:
-      - /^tf-.*$/
+  except:
+    - /^tf-.*$/
   stage: test
   script:
     - set -x
@@ -80,9 +78,8 @@ snyk_scan:
 #    expire_in: 1 week
 
 code_quality:
-  only:
-    except:
-      - /^tf-.*$/
+  except:
+    - /^tf-.*$/
   stage: test
   image: docker:stable
   variables:
@@ -106,9 +103,8 @@ code_quality:
 
 # Deployment stages
 build_scan_upload_docker:
-  only:
-    except:
-      - /^tf-.*$/
+  except:
+    - /^tf-.*$/
   stage: deploy
   image: docker:stable
   variables:
@@ -124,9 +120,8 @@ build_scan_upload_docker:
     - docker
 
 deploy_app:
-  only:
-    except:
-      - /^tf-.*$/
+  except:
+    - /^tf-.*$/
   stage: deploy
   script:
     - deployEcs apply terraform/main
@@ -136,10 +131,10 @@ deploy_app:
       - terraform
 
 destroy_app:
-  only:
-    except:
-      - /^tf-.*$/
+  except:
+    - /^tf-.*$/
   stage: deploy
+  when: manual
   script:
     - |
       if [[ -z ${BITBUCKET_PR_ID} ]] || ([[ ! -z ${BITBUCKET_PR_ID} ]] && [[ "$(getPostfixBasedOnBranchName)" = "-${APP_BRANCH_UUID}" ]]); then
