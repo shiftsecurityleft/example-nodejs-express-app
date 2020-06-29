@@ -106,7 +106,6 @@ build_scan_upload_docker:
   except:
     - /^tf-.*$/
   stage: deploy
-  image: docker:stable
   variables:
     DOCKER_DRIVER: overlay2
     SP_VERSION: 0.85.10
