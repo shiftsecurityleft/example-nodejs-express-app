@@ -108,6 +108,8 @@ build_scan_upload_docker:
   stage: deploy
   variables:
     DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
     SP_VERSION: 0.85.10
   script:
     - buildDockerImage
