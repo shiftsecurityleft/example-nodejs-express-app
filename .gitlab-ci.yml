@@ -124,9 +124,6 @@ deploy_app:
   script:
     - deployEcs apply terraform/main
     #- registerAppOnOkta
-  artifacts: # Artifacts defined here are stored so that they can be accessed in the subsequent steps.
-    report:
-      - terraform
 
 destroy_app:
   except:
@@ -138,9 +135,6 @@ destroy_app:
       if [[ -z ${BITBUCKET_PR_ID} ]] || ([[ ! -z ${BITBUCKET_PR_ID} ]] && [[ "$(getPostfixBasedOnBranchName)" = "-${APP_BRANCH_UUID}" ]]); then
         deployEcs destroy terraform/main
       fi
-  artifacts: # Artifacts defined here are stored so that they can be accessed in the subsequent steps.
-    report:
-      - terraform
 
 ## Running Terraform on tf-* branch 
 run_terraform:
