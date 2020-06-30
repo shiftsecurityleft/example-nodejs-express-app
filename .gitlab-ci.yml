@@ -8,10 +8,10 @@ before_script:
   - mkdir -p ${TEST_RESULTS}
 
 stages:
-  #- build
-  #- test
   - image-build
   - deploy
+  - build
+  - test
 
 build_nodejs:
   except:
