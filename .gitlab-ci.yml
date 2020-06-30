@@ -6,7 +6,7 @@ before_script:
     [ -x "$(command -v terraform)" ] && terraform --version
   - TEST_RESULTS=$(pwd)/test-results
   - mkdir -p ${TEST_RESULTS}
-  - source ()
+
 stages:
   - image-build
   - deploy
