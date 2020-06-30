@@ -6,7 +6,7 @@ before_script:
     [ -x "$(command -v terraform)" ] && terraform --version
   - TEST_RESULTS=$(pwd)/test-results
   - mkdir -p ${TEST_RESULTS}
-
+  - source ()
 stages:
   - image-build
   - deploy
@@ -108,14 +108,14 @@ build_scan_upload_docker:
     - /^tf-.*$/
   stage: image-build
   services:
-    - docker
-    #- docker:stable-dind
+    #- docker
+    - docker:stable-dind
     #- docker:19.03.11-dind
   variables:
     DOCKER_DRIVER: overlay2
     #SP_VERSION: 0.85.10
-    #DOCKER_HOST: tcp://docker:2376
-    #DOCKER_TLS_CERTDIR: "/certs"  
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"  
   script:
     - buildDockerImage
     #- runCvaScan ${REPO_NAME}:${REPO_COMMIT_HASH:0:7} ./Dockerfile
