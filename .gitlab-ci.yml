@@ -7,6 +7,7 @@ before_script:
   - TEST_RESULTS=$(pwd)/test-results
   - mkdir -p ${TEST_RESULTS}
   - source /root/bin/pipeline-library.sh
+  - export
 
 stages:
   - build
@@ -121,6 +122,7 @@ build_scan_upload_docker:
     DOCKER_TLS_CERTDIR: "/certs"  
   script:
     - set -x
+    - export
     - buildDockerImage
     #- runCvaScan ${REPO_NAME}:${REPO_COMMIT_HASH:0:7} ./Dockerfile
     - uploadToEcrInTargetEnv
