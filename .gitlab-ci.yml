@@ -8,9 +8,9 @@ before_script:
   - mkdir -p ${TEST_RESULTS}
 
 stages:
+  - build
   - image-build
   - deploy
-  - build
   - test
 
 build_nodejs:
@@ -46,6 +46,8 @@ build_nodejs:
     #- CI=true JEST_JUNIT_OUTPUT="./artifacts/jest-junit.xml" yarn test --testResultsProcessor=jest-junit
   artifacts:
     paths:
+      - app/build
+      - nginx.conf
       - test-results/npmaudit-*.json
     expire_in: 1 week
 
