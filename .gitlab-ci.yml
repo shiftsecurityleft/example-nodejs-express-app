@@ -6,6 +6,7 @@ before_script:
     [ -x "$(command -v terraform)" ] && terraform --version
   - TEST_RESULTS=$(pwd)/test-results
   - mkdir -p ${TEST_RESULTS}
+  - source /root/bin/pipeline-library.sh
 
 stages:
   - build
@@ -119,7 +120,6 @@ build_scan_upload_docker:
     DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"  
   script:
-    - source /root/bin/pipeline-library.sh
     - buildDockerImage
     #- runCvaScan ${REPO_NAME}:${REPO_COMMIT_HASH:0:7} ./Dockerfile
     - uploadToEcrInTargetEnv
