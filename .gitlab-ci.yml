@@ -1,5 +1,5 @@
 #image: registry.gitlab.com/shiftsecurityleft/infrapipe/infrapipe-demo:v0.2
-image: registry.hub.docker.com/evsyk/infrapipe:v0.2.9
+image: registry.hub.docker.com/evsyk/infrapipe:v0.2.10
 
 before_script:
   - |
@@ -117,6 +117,7 @@ build_scan_upload_docker:
     DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"  
   script:
+    - source /root/bin/pipeline-library.sh
     - buildDockerImage
     #- runCvaScan ${REPO_NAME}:${REPO_COMMIT_HASH:0:7} ./Dockerfile
     - uploadToEcrInTargetEnv
