@@ -1,0 +1,7 @@
+---
+families:
+  - family: "examples"
+    ssm_path: "app/examples"
+    repos:
+      - repo: "example-nodejs-react-app"
+        app_prefix: "demo-nodejs"

@@ -1,12 +1,12 @@
 #image: registry.gitlab.com/shiftsecurityleft/infrapipe/infrapipe-demo:v0.2
-image: registry.hub.docker.com/evsyk/infrapipe:v0.2.10
+image: registry.hub.docker.com/evsyk/infrapipe:v0.2.11
 
 before_script:
   - |
     [ -x "$(command -v terraform)" ] && terraform --version
   - TEST_RESULTS=$(pwd)/test-results
   - mkdir -p ${TEST_RESULTS}
-  - source /root/bin/pipeline-library.sh
+  #- source /root/bin/pipeline-library.sh
 
 stages:
   - build
