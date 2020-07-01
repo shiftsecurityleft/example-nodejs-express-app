@@ -6,7 +6,7 @@ before_script:
     [ -x "$(command -v terraform)" ] && terraform --version
   - TEST_RESULTS=$(pwd)/test-results
   - mkdir -p ${TEST_RESULTS}
-  #- source /root/bin/pipeline-library.sh
+  - source /root/bin/pipeline-library.sh
 
 stages:
   - build
