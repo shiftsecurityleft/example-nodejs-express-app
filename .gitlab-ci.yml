@@ -120,6 +120,7 @@ build_scan_upload_docker:
     DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"  
   script:
+    - set -x
     - buildDockerImage
     #- runCvaScan ${REPO_NAME}:${REPO_COMMIT_HASH:0:7} ./Dockerfile
     - uploadToEcrInTargetEnv
