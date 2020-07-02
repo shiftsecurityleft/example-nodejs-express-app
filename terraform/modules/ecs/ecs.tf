@@ -3,8 +3,8 @@ variable "VPC_NAME" {}
 # temporary variable for listener rule
 variable "DOMAIN" {}
 
-variable "APP_UUID" {
-  description = "UUID for App instance = App prefix + Branch UUID"
+variable "APP_NAME" {
+  description = "Name of the App"
 }
 
 variable "APP_IMAGE" {
@@ -23,19 +23,27 @@ variable "APP_PORT" {
   description = "Port exposed by the docker image to redirect traffic to"
 }
 
-variable "XRAY_IMAGE" {
+variable "DATADOG_IMAGE" {
   description = "Docker image in ECR to run in the ECS cluster"
-  default     = "docker-xray"
+  default     = "datadog/agent"
 }
 
-variable "XRAY_IMAGE_TAG" {
+variable "DATADOG_IMAGE_TAG" {
   default = "latest"
 }
 
-variable "XRAY_PORT" {
-  description = "Port exposed by the docker image to redirect traffic to"
-  default     = 2000
+variable "DATADOG_APP_KEY" {
+  default = ""
+} 
+
+variable "DATADOG_API_KEY" {
+  default = ""
 }
+
+variable "DATADOG_ENABLED" {
+  default = false
+}
+
 
 variable "APP_COUNT" {
   description = "Number of docker containers to run"
@@ -59,9 +67,11 @@ variable "ENVIRONMENT" {
   default     = "null"
 }
 
-variable APP_FULLNAME {}
+variable DNS_NAME {}
 
-variable "ROLE_NAME" {}
+variable "ROLE_NAME" {
+  default = ""
+}
 
 variable "TAGS" {
   type = "map"
@@ -105,10 +115,10 @@ variable "SECURITYGROUP_EXT_POSTFIX" {
   default = "-ext"
 }
 
-variable "AUTOSHUTDOWN" {
-  description = "Time to stay up from the start of provision 1.5h or 1h30m. The accepted units are m and h."
-  default = "30m"
-}
+# provider "datadog" {
+#   api_key = "${var.DATADOG_API_KEY}"
+#   app_key = "${var.DATADOG_APP_KEY}"
+# }
 
 data "aws_iam_account_alias" "current" {}
 
@@ -123,11 +133,7 @@ data "aws_region" "current" {}
 
 # Fetch AZs in the current region
 data "aws_iam_role" "ecs_task_execution_role" {
-  name = "${var.ROLE_NAME}"
-}
-
-data "aws_ecr_repository" "xray" {
-  name = "${var.XRAY_IMAGE}"
+  name = "${var.ROLE_NAME == "" ? var.VPC_NAME : var.ROLE_NAME}"
 }
 
 data "aws_ecr_repository" "app" {
@@ -173,7 +179,7 @@ resource "aws_security_group_rule" "allow_https" {
 
 # Traffic to the ECS Cluster should only come from the lb
 resource "aws_security_group" "ecs_tasks" {
-  name        = "${var.APP_UUID}-ecs-tasks"
+  name        = "${var.APP_NAME}-ecs-tasks"
   description = "allow inbound access from the lb only"
   vpc_id      = "${data.aws_vpc.main.id}"
 
@@ -194,22 +200,22 @@ resource "aws_security_group" "ecs_tasks" {
   tags = "${merge(
 		var.TAGS,
 		map(
-			"Name","${var.APP_UUID}-ecs-tasks"
+			"Name","${var.APP_NAME}-ecs-tasks"
 		)
 	)}"
 }
 
 # Redirect all traffic from the lb to the target group
 resource "aws_lb_target_group" "app" {
-  name        = "${var.APP_UUID}"
+  name        = "${var.APP_NAME}"
   port        = "${var.APP_PORT}"
   protocol    = "${var.APP_PROTOCOL}"
   vpc_id      = "${data.aws_vpc.main.id}"
   target_type = "ip"
 
   health_check {
-    protocol    = "${var.APP_PROTOCOL}"    
-    port        = "traffic-port"
+    protocol = "${var.APP_PROTOCOL}"
+    port = "traffic-port"
     path    = "${var.HEALTHCHECK_URI}"
     matcher = "200-299"
   }
@@ -217,7 +223,7 @@ resource "aws_lb_target_group" "app" {
   tags = "${merge(
 		var.TAGS,
 		map(
-			"Name","${var.APP_UUID}"
+			"Name","${var.APP_NAME}"
 		)
 	)}"
 }
@@ -238,7 +244,7 @@ resource "aws_lb_listener_rule" "status" {
 
   condition {
     field  = "host-header"
-    values = ["${var.APP_FULLNAME}.${local.DOMAIN}"]
+    values = ["${var.DNS_NAME}.${local.DOMAIN}"]
   }
 }
 
@@ -256,7 +262,7 @@ resource "aws_lb_listener_rule" "host_based_routing" {
   }
   condition {
     field  = "host-header"
-    values = ["${var.APP_FULLNAME}.${local.DOMAIN}"]
+    values = ["${var.DNS_NAME}.${local.DOMAIN}"]
   }
   depends_on = ["aws_lb_listener_rule.status"]
 }
@@ -287,7 +293,7 @@ resource "aws_lb_listener_rule" "host_based_routing_with_oidc" {
 
   condition {
     field  = "host-header"
-    values = ["${var.APP_FULLNAME}.${local.DOMAIN}"]
+    values = ["${var.DNS_NAME}.${local.DOMAIN}"]
   }
 
   depends_on = ["aws_lb_listener_rule.status"]
@@ -295,29 +301,36 @@ resource "aws_lb_listener_rule" "host_based_routing_with_oidc" {
 
 ### ECS
 resource "aws_ecs_cluster" "main" {
-  name = "${var.APP_UUID}"
+  name = "${var.APP_NAME}"
+  capacity_providers = ["FARGATE_SPOT"]
+  default_capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight = "1"
+    base = "1"
+  }
 
   tags = "${merge(
 		var.TAGS,
 		map(
-			"Name","${var.APP_UUID}"
+			"Name","${var.APP_NAME}"
 		)
 	)}"
 }
 
 resource "aws_cloudwatch_log_group" "log" {
-  name = "/ecs/${var.APP_UUID}"
+  name = "/ecs/${var.APP_NAME}"
 
   tags = "${merge(
 		var.TAGS,
 		map(
-			"Name","/ecs/${var.APP_UUID}"
+			"Name","/ecs/${var.APP_NAME}"
 		)
 	)}"
 }
 
 resource "aws_ecs_task_definition" "app" {
-  family                   = "${var.APP_UUID}"
+  count                    = "${var.DATADOG_ENABLED == "YES" ? 0 : 1}"
+  family                   = "${var.APP_NAME}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "${var.CPU}"
@@ -328,30 +341,10 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = <<DEFINITION
 [
   {
-    "cpu": 0,
-    "image": "${data.aws_ecr_repository.xray.repository_url}:${var.XRAY_IMAGE_TAG}",
-    "memory": null,
-    "name": "xray",
-    "portMappings": [
-      {
-        "containerPort": ${var.XRAY_PORT},
-        "hostPort": ${var.XRAY_PORT}
-      }
-    ],
-    "logConfiguration": {
-      "logDriver": "awslogs",
-      "options": {
-        "awslogs-group": "${aws_cloudwatch_log_group.log.name}",
-        "awslogs-region": "${data.aws_region.current.name}",
-        "awslogs-stream-prefix": "ecs"
-      }
-    }
-  },
-  {
-    "cpu": 0,
+    "cpu": ${var.CPU},
     "image": "${data.aws_ecr_repository.app.repository_url}:${var.APP_IMAGE_TAG}",
-    "memory": null,
-    "name": "${var.APP_UUID}",
+    "memory": ${var.MEMORY},
+    "name": "${var.APP_NAME}",
     "essential": true,
     "portMappings": [
       {
@@ -376,17 +369,95 @@ DEFINITION
   tags = "${merge(
 		var.TAGS,
 		map(
-			"Name","${var.APP_UUID}"
+			"Name","${var.APP_NAME}"
+		)
+	)}"
+}
+
+resource "aws_ecs_task_definition" "app_with_sidecar" {
+  count                    = "${var.DATADOG_ENABLED == "YES" ? 1 : 0}"
+  family                   = "${var.APP_NAME}"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "${var.CPU}"
+  memory                   = "${var.MEMORY}"
+  execution_role_arn       = "${data.aws_iam_role.ecs_task_execution_role.arn}"
+  task_role_arn            = "${data.aws_iam_role.ecs_task_execution_role.arn}"
+
+  container_definitions = <<DEFINITION
+[
+  {
+    "cpu": 0,
+    "name": "datadog",
+    "image": "${var.DATADOG_IMAGE}:${var.DATADOG_IMAGE_TAG}",
+    "memory": null,
+    "essential": true,
+    "environment": [
+      {
+        "name": "DD_API_KEY",
+        "value": "${var.DATADOG_API_KEY}"
+      },
+      {
+        "name": "DD_SITE",
+        "value": "datadoghq.com"
+      },
+      {
+        "name": "ECS_FARGATE",
+        "value": "true"
+      },
+      {
+        "name": "DD_APM_ENABLED",
+        "value": "true"
+      }
+    ]
+  },
+  {
+    "cpu": ${var.CPU},
+    "image": "${data.aws_ecr_repository.app.repository_url}:${var.APP_IMAGE_TAG}",
+    "memory": ${var.MEMORY},
+    "name": "${var.APP_NAME}",
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": ${var.APP_PORT},
+        "hostPort": ${var.APP_PORT}
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${aws_cloudwatch_log_group.log.name}",
+        "awslogs-region": "${data.aws_region.current.name}",
+        "awslogs-stream-prefix": "ecs"
+      }
+    },    
+    "secrets": ${var.SECRETS},
+    "environment": ${var.ENVIRONMENT}
+  }
+]
+DEFINITION
+
+  tags = "${merge(
+		var.TAGS,
+		map(
+			"Name","${var.APP_NAME}"
 		)
 	)}"
 }
 
 resource "aws_ecs_service" "main" {
-  name                              = "${var.APP_UUID}"
+  name                              = "${var.APP_NAME}"
   cluster                           = "${aws_ecs_cluster.main.id}"
-  task_definition                   = "${aws_ecs_task_definition.app.arn}"
+  task_definition                   = "${var.DATADOG_ENABLED == "YES" ? aws_ecs_task_definition.app_with_sidecar.0.arn : aws_ecs_task_definition.app.0.arn}"
   desired_count                     = "${var.APP_COUNT}"
-  launch_type                       = "FARGATE"
+/**
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight = "1"
+    base = "2"
+  }
+*/  
+  #launch_type                       = "FARGATE"
   health_check_grace_period_seconds = "${var.HEALTHCHECK_GRACE_PERIOD_SEC}"
 
   network_configuration {
@@ -396,7 +467,7 @@ resource "aws_ecs_service" "main" {
 
   load_balancer {
     target_group_arn = "${aws_lb_target_group.app.id}"
-    container_name   = "${var.APP_UUID}"
+    container_name   = "${var.APP_NAME}"
     container_port   = "${var.APP_PORT}"
   }
 
@@ -406,35 +477,25 @@ resource "aws_ecs_service" "main" {
   #tags = "${merge(
   #var.TAGS,
   #	map(
-  #		"Name","${var.APP_UUID}"
+  #		"Name","${var.APP_NAME}"
   #	)
   #)}"
-  depends_on = ["aws_ecs_task_definition.app"]
+  depends_on = [
+    "aws_ecs_task_definition.app",
+    "aws_ecs_task_definition.app_with_sidecar"
+  ]
 }
 
-resource "aws_appautoscaling_target" "ecs" {
-  max_capacity       = "${var.APP_COUNT}"
-  min_capacity       = 1
-  resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.main.name}"
-  role_arn           = "${data.aws_iam_role.ecs_task_execution_role.arn}"
-  scalable_dimension = "ecs:service:DesiredCount"
-  service_namespace  = "ecs"
+# resource "datadog_monitor" "cpumonitor" {
+#   name = "${var.APP_NAME} cpu monitor"
+#   type = "metric alert"
+#   message = "CPU usage alert"
+#   query = "avg(last_1m):avg:system.cpu.system{*} by {host} > 60"
+# }
 
-  depends_on = ["aws_ecs_cluster.main", "aws_ecs_service.main"]
-}
-
-resource "aws_appautoscaling_scheduled_action" "ecs" {
-  name               = "shutdown-${var.APP_UUID}-in-${var.AUTOSHUTDOWN}"
-  service_namespace  = "${aws_appautoscaling_target.ecs.service_namespace}"
-  resource_id        = "${aws_appautoscaling_target.ecs.resource_id}"
-  scalable_dimension = "${aws_appautoscaling_target.ecs.scalable_dimension}"
-  schedule           = "at(${substr(timeadd(timestamp(), var.AUTOSHUTDOWN), 0, 19)})"
-
-  scalable_target_action {
-    min_capacity = 0
-    max_capacity = 0
-  }
-}
+# output "dd_monitor_id" {
+#   value = "${datadog_monitor.cpumonitor.id}"
+# }
 
 output "image_url" {
   value = "${data.aws_ecr_repository.app.repository_url}:${var.APP_IMAGE_TAG}"
@@ -445,5 +506,12 @@ output "lb_hostname" {
 }
 
 output "listener_https_url" {
-  value = "https://${var.APP_FULLNAME}.${local.DOMAIN}"
+  value = "https://${var.DNS_NAME}.${local.DOMAIN}"
+}
+
+output "subnets" {
+  value = "${join(", ", data.aws_subnet_ids.private.ids)}"
+}
+output "security_groups" {
+  value = "${aws_security_group.ecs_tasks.id}"
 }
