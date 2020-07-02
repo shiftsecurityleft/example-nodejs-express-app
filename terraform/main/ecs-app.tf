@@ -7,7 +7,7 @@ variable APP_FULLNAME {}
 variable APP_PREFIX {}
 
 module "ecs" {
-  source = "git::https://bitbucket.org/shiftsecurityleft/terraform-modules.git//ecs?ref=v2.0"
+  source = "../modules/ecs"
 
   VPC_NAME      = "${var.FAMILY}"
   DOMAIN        = "${var.DOMAIN}"
