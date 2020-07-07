@@ -26,6 +26,12 @@ Include a sample Terraform which creates encrypted and private S3 bucket on AWS 
 1. Add above S3 key to SSM security/pipeline/<ENV>/AWS_TFSTATE_S3_KEY
 
 
+## How to create a example app
+1, npx create-react-app app
+1. cd app
+1. npm install
+
+
 
 ## Prerequsit
 
