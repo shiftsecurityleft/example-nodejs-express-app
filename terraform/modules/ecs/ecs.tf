@@ -52,7 +52,7 @@ variable APP_FULLNAME {}
 variable "ROLE_NAME" {}
 
 variable "TAGS" {
-  type = "map"
+  type = "map(string)"
 }
 
 variable "HEALTHCHECK_URI" {}
@@ -103,7 +103,7 @@ data "aws_iam_account_alias" "current" {}
 data "aws_vpc" "main" {
   filter {
     name   = "tag:Name"
-    values = ["${var.VPC_NAME}"]
+    values = [var.VPC_NAME]
   }
 }
 
@@ -111,15 +111,15 @@ data "aws_region" "current" {}
 
 # Fetch AZs in the current region
 data "aws_iam_role" "ecs_task_execution_role" {
-  name = "${var.ROLE_NAME}"
+  name = var.ROLE_NAME
 }
 
 data "aws_ecr_repository" "app" {
-  name = "${var.APP_IMAGE}"
+  name = var.APP_IMAGE
 }
 
 data "aws_subnet_ids" "private" {
-  vpc_id = "${data.aws_vpc.main.id}"
+  vpc_id = data.aws_vpc.main.id
 
   tags = {
     Tier = "private"
@@ -135,12 +135,12 @@ data "aws_lb" "main" {
 }
 
 data "aws_lb_listener" "https" {
-  load_balancer_arn = "${data.aws_lb.main.arn}"
+  load_balancer_arn = data.aws_lb.main.arn
   port              = 443
 }
 
 locals {
-  DOMAIN = "${var.INTERNAL_ONLY ? var.INTERNAL_DOMAIN:var.DOMAIN}"
+  DOMAIN = var.INTERNAL_ONLY ? var.INTERNAL_DOMAIN:var.DOMAIN
 }
 
 ### Security
@@ -150,22 +150,22 @@ resource "aws_security_group_rule" "allow_https" {
   from_port                = 443
   to_port                  = 443
   protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.ecs_tasks.id}"
+  source_security_group_id = aws_security_group.ecs_tasks.id
 
-  security_group_id = "${data.aws_security_group.lb.id}"
+  security_group_id = data.aws_security_group.lb.id
 }
 
 # Traffic to the ECS Cluster should only come from the lb
 resource "aws_security_group" "ecs_tasks" {
   name        = "${var.APP_UUID}-ecs-tasks"
   description = "allow inbound access from the lb only"
-  vpc_id      = "${data.aws_vpc.main.id}"
+  vpc_id      = data.aws_vpc.main.id
 
   ingress {
     protocol        = "tcp"
-    from_port       = "${var.APP_PORT}"
-    to_port         = "${var.APP_PORT}"
-    security_groups = ["${data.aws_security_group.lb.id}"]
+    from_port       = var.APP_PORT
+    to_port         = var.APP_PORT
+    security_groups = [data.aws_security_group.lb.id]
   }
 
   egress {
@@ -185,39 +185,39 @@ resource "aws_security_group" "ecs_tasks" {
 
 # Redirect all traffic from the lb to the target group
 resource "aws_lb_target_group" "app" {
-  name        = "${var.APP_UUID}"
-  port        = "${var.APP_PORT}"
-  protocol    = "${var.APP_PROTOCOL}"
-  vpc_id      = "${data.aws_vpc.main.id}"
+  name        = var.APP_UUID
+  port        = var.APP_PORT
+  protocol    = var.APP_PROTOCOL
+  vpc_id      = data.aws_vpc.main.id
   target_type = "ip"
 
   health_check {
-    protocol    = "${var.APP_PROTOCOL}"
+    protocol    = var.APP_PROTOCOL
     port        = "traffic-port"
-    path    = "${var.HEALTHCHECK_URI}"
+    path    = var.HEALTHCHECK_URI
     matcher = "200-299"
   }
 
-  tags = "${merge(
+  tags = merge(
 		var.TAGS,
-		map(
-			"Name","${var.APP_UUID}"
-		)
-	)}"
+		{
+			Name = var.APP_UUID
+		}
+	)
 }
 
 # Redirect all traffic from the lb to the target group
 resource "aws_lb_listener_rule" "status" {
-  listener_arn = "${data.aws_lb_listener.https.arn}"
+  listener_arn = data.aws_lb_listener.https.arn
 
   action {
     type             = "forward"
-    target_group_arn = "${aws_lb_target_group.app.arn}"
+    target_group_arn = aws_lb_target_group.app.arn
   }
 
   condition {
     field  = "path-pattern"
-    values = ["${var.HEALTHCHECK_URI}"]
+    values = [var.HEALTHCHECK_URI]
   }
 
   condition {
@@ -228,15 +228,15 @@ resource "aws_lb_listener_rule" "status" {
 
 # Provision only if OIDC_AUTHENTICATION is false
 resource "aws_lb_listener_rule" "host_based_routing" {
-  count = "${var.OIDC_AUTHENTICATION ? 0:1}"
+  count = var.OIDC_AUTHENTICATION ? 0:1
 
-  listener_arn = "${data.aws_lb_listener.https.arn}"
+  listener_arn = data.aws_lb_listener.https.arn
 
   #priority = 99
 
   action {
     type             = "forward"
-    target_group_arn = "${aws_lb_target_group.app.arn}"
+    target_group_arn = aws_lb_target_group.app.arn
   }
   condition {
     field  = "host-header"
@@ -247,18 +247,18 @@ resource "aws_lb_listener_rule" "host_based_routing" {
 
 # Provision only if OIDC_AUTHENTICATION is true
 resource "aws_lb_listener_rule" "host_based_routing_with_oidc" {
-  count = "${var.OIDC_AUTHENTICATION ? 1:0}"
+  count = var.OIDC_AUTHENTICATION ? 1:0
 
-  listener_arn = "${data.aws_lb_listener.https.arn}"
+  listener_arn = data.aws_lb_listener.https.arn
 
   action {
     type = "authenticate-oidc"
 
     authenticate_oidc {
       authorization_endpoint = "${var.OIDC_ISSUER}/v1/authorize"
-      client_id              = "${var.OIDC_CLIENT_ID}"
-      client_secret          = "${var.OIDC_CLIENT_SECRET}"
-      issuer                 = "${var.OIDC_ISSUER}"
+      client_id              = var.OIDC_CLIENT_ID
+      client_secret          = var.OIDC_CLIENT_SECRET
+      issuer                 = var.OIDC_ISSUER
       token_endpoint         = "${var.OIDC_ISSUER}/v1/token"
       user_info_endpoint     = "${var.OIDC_ISSUER}/v1/userinfo"
     }
@@ -266,7 +266,7 @@ resource "aws_lb_listener_rule" "host_based_routing_with_oidc" {
 
   action {
     type             = "forward"
-    target_group_arn = "${aws_lb_target_group.app.arn}"
+    target_group_arn = aws_lb_target_group.app.arn
   }
 
   condition {
@@ -279,7 +279,7 @@ resource "aws_lb_listener_rule" "host_based_routing_with_oidc" {
 
 ### ECS
 resource "aws_ecs_cluster" "main" {
-  name = "${var.APP_UUID}"
+  name = var.APP_UUID
   capacity_providers = ["FARGATE_SPOT"]
   default_capacity_provider_strategy {
     capacity_provider = "FARGATE_SPOT"
@@ -287,12 +287,12 @@ resource "aws_ecs_cluster" "main" {
     base = "1"
   }
 
-  tags = "${merge(
+  tags = merge(
 		var.TAGS,
-		map(
-			"Name","${var.APP_UUID}"
-		)
-	)}"
+		{
+			Name = var.APP_UUID
+    }
+	)
 }
 
 resource "aws_cloudwatch_log_group" "log" {
@@ -307,13 +307,13 @@ resource "aws_cloudwatch_log_group" "log" {
 }
 
 resource "aws_ecs_task_definition" "app" {
-  family                   = "${var.APP_UUID}"
+  family                   = var.APP_UUID
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "${var.CPU}"
-  memory                   = "${var.MEMORY}"
-  execution_role_arn       = "${data.aws_iam_role.ecs_task_execution_role.arn}"
-  task_role_arn            = "${data.aws_iam_role.ecs_task_execution_role.arn}"
+  cpu                      = var.CPU
+  memory                   = var.MEMORY
+  execution_role_arn       = data.aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn            = data.aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = <<DEFINITION
 [
@@ -343,12 +343,12 @@ resource "aws_ecs_task_definition" "app" {
 ]
 DEFINITION
 
-  tags = "${merge(
+  tags = merge(
 		var.TAGS,
-		map(
-			"Name","${var.APP_UUID}"
-		)
-	)}"
+		{
+			Name = var.APP_UUID
+    }
+	)
 }
 
 resource "aws_ecs_service" "main" {
@@ -364,17 +364,17 @@ resource "aws_ecs_service" "main" {
   }
 */  
   #launch_type                       = "FARGATE"
-  health_check_grace_period_seconds = "${var.HEALTHCHECK_GRACE_PERIOD_SEC}"
+  health_check_grace_period_seconds = var.HEALTHCHECK_GRACE_PERIOD_SEC
 
   network_configuration {
-    security_groups = ["${aws_security_group.ecs_tasks.id}"]
-    subnets         = "${data.aws_subnet_ids.private.ids}"
+    security_groups = [aws_security_group.ecs_tasks.id]
+    subnets         = data.aws_subnet_ids.private.ids
   }
 
   load_balancer {
-    target_group_arn = "${aws_lb_target_group.app.id}"
-    container_name   = "${var.APP_UUID}"
-    container_port   = "${var.APP_PORT}"
+    target_group_arn = aws_lb_target_group.app.id
+    container_name   = var.APP_UUID
+    container_port   = var.APP_PORT
   }
 
   ## The new ARN and resource ID format must be enabled to add tags to the service
@@ -383,17 +383,17 @@ resource "aws_ecs_service" "main" {
   #tags = "${merge(
   #var.TAGS,
   #	map(
-  #		"Name","${var.APP_UUID}"
+  #		"Name",var.APP_UUID
   #	)
   #)}"
   depends_on = [ aws_ecs_task_definition.app ]
 }
 
 resource "aws_appautoscaling_target" "ecs" {
-  max_capacity       = "${var.APP_COUNT}"
+  max_capacity       = var.APP_COUNT
   min_capacity       = 1
   resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.main.name}"
-  role_arn           = "${data.aws_iam_role.ecs_task_execution_role.arn}"
+  role_arn           = data.aws_iam_role.ecs_task_execution_role.arn
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 
@@ -402,9 +402,9 @@ resource "aws_appautoscaling_target" "ecs" {
 
 resource "aws_appautoscaling_scheduled_action" "ecs" {
   name               = "shutdown-${var.APP_UUID}-in-${var.AUTOSHUTDOWN}"
-  service_namespace  = "${aws_appautoscaling_target.ecs.service_namespace}"
-  resource_id        = "${aws_appautoscaling_target.ecs.resource_id}"
-  scalable_dimension = "${aws_appautoscaling_target.ecs.scalable_dimension}"
+  service_namespace  = aws_appautoscaling_target.ecs.service_namespace
+  resource_id        = aws_appautoscaling_target.ecs.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs.scalable_dimension
   schedule           = "at(${substr(timeadd(timestamp(), var.AUTOSHUTDOWN), 0, 19)})"
 
   scalable_target_action {
@@ -419,7 +419,7 @@ output "image_url" {
 }
 
 output "lb_hostname" {
-  value = "${data.aws_lb.main.dns_name}"
+  value = data.aws_lb.main.dns_name
 }
 
 output "listener_https_url" {
@@ -427,8 +427,8 @@ output "listener_https_url" {
 }
 
 output "subnets" {
-  value = "${join(", ", data.aws_subnet_ids.private.ids)}"
+  value = join(", ", data.aws_subnet_ids.private.ids)
 }
 output "security_groups" {
-  value = "${aws_security_group.ecs_tasks.id}"
+  value = aws_security_group.ecs_tasks.id
 }
