@@ -1,99 +1,99 @@
-variable "VPC_NAME" {}
+variable VPC_NAME {}
 
 # temporary variable for listener rule
-variable "DOMAIN" {}
+variable DOMAIN {}
 
-variable "APP_UUID" {
+variable APP_UUID {
   description = "UUID for App instance = App prefix + Branch UUID"
 }
 
-variable "APP_IMAGE" {
+variable APP_IMAGE {
   description = "Docker image in ECR to run in the ECS cluster"
 }
 
-variable "APP_IMAGE_TAG" {
+variable APP_IMAGE_TAG {
   description = "Docker image tag in ECR to run in the ECS cluster"
 }
 
-variable "APP_PROTOCOL" {
+variable APP_PROTOCOL {
   description = "App's protocol"
 }
 
-variable "APP_PORT" {
+variable APP_PORT {
   description = "Port exposed by the docker image to redirect traffic to"
 }
 
 
 
-variable "APP_COUNT" {
+variable APP_COUNT {
   description = "Number of docker containers to run"
 }
 
-variable "CPU" {
+variable CPU {
   description = "Fargate instance CPU units.  Refer https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-cpu-memory-error.html"
 }
 
-variable "MEMORY" {
+variable MEMORY {
   description = "Fargate instance memory.  Refer https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-cpu-memory-error.html"
 }
 
-variable "SECRETS" {
+variable SECRETS {
   description = "JSON format of secrets from SSM"
   default     = "null"
 }
 
-variable "ENVIRONMENT" {
+variable ENVIRONMENT {
   description = "JSON format of env vars"
   default     = "null"
 }
 
 variable APP_FULLNAME {}
 
-variable "ROLE_NAME" {}
+variable ROLE_NAME {}
 
-variable "TAGS" {
+variable TAGS {
   type = "map(string)"
 }
 
-variable "HEALTHCHECK_URI" {}
+variable HEALTHCHECK_URI {}
 
-variable "HEALTHCHECK_GRACE_PERIOD_SEC" {
+variable HEALTHCHECK_GRACE_PERIOD_SEC {
   default = 30
 }
 
-variable "OIDC_AUTHENTICATION" {
+variable OIDC_AUTHENTICATION {
   default = false
 }
 
-variable "OIDC_CLIENT_SECRET" {
+variable OIDC_CLIENT_SECRET {
   default = "null"
 }
 
-variable "OIDC_CLIENT_ID" {
+variable OIDC_CLIENT_ID {
   default = "null"
 }
 
-variable "OIDC_ISSUER" {
+variable OIDC_ISSUER {
   default = "null"
 }
 
-variable "INTERNAL_ONLY" {
+variable INTERNAL_ONLY {
   default = false
 }
 
-variable "INTERNAL_DOMAIN" {
+variable INTERNAL_DOMAIN {
   default = "null"
 }
 
-variable "LB_EXT_POSTFIX" {
+variable LB_EXT_POSTFIX {
   default = "-ext"
 }
 
-variable "SECURITYGROUP_EXT_POSTFIX" {
+variable SECURITYGROUP_EXT_POSTFIX {
   default = "-ext"
 }
 
-variable "AUTOSHUTDOWN" {
+variable AUTOSHUTDOWN {
   description = "Time to stay up from the start of provision 1.5h or 1h30m. The accepted units are m and h."
   default = "30m"
 }
