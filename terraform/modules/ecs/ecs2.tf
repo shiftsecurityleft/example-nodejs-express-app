@@ -23,7 +23,19 @@ variable "APP_PORT" {
   description = "Port exposed by the docker image to redirect traffic to"
 }
 
+variable "XRAY_IMAGE" {
+  description = "Docker image in ECR to run in the ECS cluster"
+  default     = "docker-xray"
+}
 
+variable "XRAY_IMAGE_TAG" {
+  default = "latest"
+}
+
+variable "XRAY_PORT" {
+  description = "Port exposed by the docker image to redirect traffic to"
+  default     = 2000
+}
 
 variable "APP_COUNT" {
   description = "Number of docker containers to run"
@@ -114,6 +126,10 @@ data "aws_iam_role" "ecs_task_execution_role" {
   name = "${var.ROLE_NAME}"
 }
 
+data "aws_ecr_repository" "xray" {
+  name = "${var.XRAY_IMAGE}"
+}
+
 data "aws_ecr_repository" "app" {
   name = "${var.APP_IMAGE}"
 }
@@ -192,7 +208,7 @@ resource "aws_lb_target_group" "app" {
   target_type = "ip"
 
   health_check {
-    protocol    = "${var.APP_PROTOCOL}"
+    protocol    = "${var.APP_PROTOCOL}"    
     port        = "traffic-port"
     path    = "${var.HEALTHCHECK_URI}"
     matcher = "200-299"
@@ -280,12 +296,6 @@ resource "aws_lb_listener_rule" "host_based_routing_with_oidc" {
 ### ECS
 resource "aws_ecs_cluster" "main" {
   name = "${var.APP_UUID}"
-  capacity_providers = ["FARGATE_SPOT"]
-  default_capacity_provider_strategy {
-    capacity_provider = "FARGATE_SPOT"
-    weight = "1"
-    base = "1"
-  }
 
   tags = "${merge(
 		var.TAGS,
@@ -318,9 +328,29 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = <<DEFINITION
 [
   {
-    "cpu": ${var.CPU},
+    "cpu": 0,
+    "image": "${data.aws_ecr_repository.xray.repository_url}:${var.XRAY_IMAGE_TAG}",
+    "memory": null,
+    "name": "xray",
+    "portMappings": [
+      {
+        "containerPort": ${var.XRAY_PORT},
+        "hostPort": ${var.XRAY_PORT}
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${aws_cloudwatch_log_group.log.name}",
+        "awslogs-region": "${data.aws_region.current.name}",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  },
+  {
+    "cpu": 0,
     "image": "${data.aws_ecr_repository.app.repository_url}:${var.APP_IMAGE_TAG}",
-    "memory": ${var.MEMORY},
+    "memory": null,
     "name": "${var.APP_UUID}",
     "essential": true,
     "portMappings": [
@@ -352,18 +382,11 @@ DEFINITION
 }
 
 resource "aws_ecs_service" "main" {
-  name                              = var.APP_UUID
-  cluster                           = aws_ecs_cluster.main.id
-  task_definition                   = aws_ecs_task_definition.app.arn
-  desired_count                     = var.APP_COUNT
-/**
-  capacity_provider_strategy {
-    capacity_provider = "FARGATE_SPOT"
-    weight = "1"
-    base = "2"
-  }
-*/  
-  #launch_type                       = "FARGATE"
+  name                              = "${var.APP_UUID}"
+  cluster                           = "${aws_ecs_cluster.main.id}"
+  task_definition                   = "${aws_ecs_task_definition.app.arn}"
+  desired_count                     = "${var.APP_COUNT}"
+  launch_type                       = "FARGATE"
   health_check_grace_period_seconds = "${var.HEALTHCHECK_GRACE_PERIOD_SEC}"
 
   network_configuration {
@@ -386,7 +409,7 @@ resource "aws_ecs_service" "main" {
   #		"Name","${var.APP_UUID}"
   #	)
   #)}"
-  depends_on = [ aws_ecs_task_definition.app ]
+  depends_on = ["aws_ecs_task_definition.app"]
 }
 
 resource "aws_appautoscaling_target" "ecs" {
@@ -413,7 +436,6 @@ resource "aws_appautoscaling_scheduled_action" "ecs" {
   }
 }
 
-
 output "image_url" {
   value = "${data.aws_ecr_repository.app.repository_url}:${var.APP_IMAGE_TAG}"
 }
@@ -424,11 +446,4 @@ output "lb_hostname" {
 
 output "listener_https_url" {
   value = "https://${var.APP_FULLNAME}.${local.DOMAIN}"
-}
-
-output "subnets" {
-  value = "${join(", ", data.aws_subnet_ids.private.ids)}"
-}
-output "security_groups" {
-  value = "${aws_security_group.ecs_tasks.id}"
 }
