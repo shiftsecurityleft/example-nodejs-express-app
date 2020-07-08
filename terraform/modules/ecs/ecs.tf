@@ -175,12 +175,12 @@ resource "aws_security_group" "ecs_tasks" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = "${merge(
+  tags = merge(
 		var.TAGS,
-		map(
-			"Name","${var.APP_UUID}-ecs-tasks"
-		)
-	)}"
+		{
+			Name = "${var.APP_UUID}-ecs-tasks"
+    }
+	)
 }
 
 # Redirect all traffic from the lb to the target group
@@ -298,12 +298,12 @@ resource "aws_ecs_cluster" "main" {
 resource "aws_cloudwatch_log_group" "log" {
   name = "/ecs/${var.APP_UUID}"
 
-  tags = "${merge(
+  tags = merge(
 		var.TAGS,
-		map(
-			"Name","/ecs/${var.APP_UUID}"
-		)
-	)}"
+		{
+			Name = "/ecs/${var.APP_UUID}"
+    }
+	)
 }
 
 resource "aws_ecs_task_definition" "app" {
