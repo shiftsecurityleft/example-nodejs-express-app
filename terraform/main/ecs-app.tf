@@ -50,7 +50,6 @@ data "template_file" "env" {
 
   vars = {
     REPO_COMMIT_HASH     = "${local.common_tags["REPO_COMMIT_HASH"]}"
-    REPO_COMMIT_DATETIME = "${local.common_tags["REPO_COMMIT_DATETIME"]}"
   }
 }
 
