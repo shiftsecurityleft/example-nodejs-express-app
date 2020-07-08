@@ -52,7 +52,7 @@ variable APP_FULLNAME {}
 variable ROLE_NAME {}
 
 variable TAGS {
-  type = "map(string)"
+  type = map(string)
 }
 
 variable HEALTHCHECK_URI {}
@@ -242,7 +242,7 @@ resource "aws_lb_listener_rule" "host_based_routing" {
     field  = "host-header"
     values = ["${var.APP_FULLNAME}.${local.DOMAIN}"]
   }
-  depends_on = ["aws_lb_listener_rule.status"]
+  depends_on = [ aws_lb_listener_rule.status ]
 }
 
 # Provision only if OIDC_AUTHENTICATION is true
@@ -274,7 +274,7 @@ resource "aws_lb_listener_rule" "host_based_routing_with_oidc" {
     values = ["${var.APP_FULLNAME}.${local.DOMAIN}"]
   }
 
-  depends_on = ["aws_lb_listener_rule.status"]
+  depends_on = [ aws_lb_listener_rule.status ]
 }
 
 ### ECS
@@ -397,7 +397,7 @@ resource "aws_appautoscaling_target" "ecs" {
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 
-  depends_on = ["aws_ecs_cluster.main", "aws_ecs_service.main"]
+  depends_on = [ aws_ecs_cluster.main, aws_ecs_service.main ]
 }
 
 resource "aws_appautoscaling_scheduled_action" "ecs" {
