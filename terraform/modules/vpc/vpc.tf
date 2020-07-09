@@ -175,6 +175,5 @@ output "vpc_name" {
 
 output "public_subnets" {
   description = "The Name tag of the VPC instance"
-  type = list(string)
   value       = aws_subnet.public.*.id
 }
