@@ -30,7 +30,7 @@ module "lb-ext" {
 
   LB_NAME  = "${var.FAMILY}-ext"
   VPC_ID = module.vpc.vpc_id
-  SUBNETS = module.vpc.public_subnets
+  SUBNETS = split(",", module.vpc.public_subnets)
 
   SOURCE_CIDRS = [ "0.0.0.0/0" ]
 
