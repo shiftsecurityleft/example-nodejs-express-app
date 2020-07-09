@@ -1,4 +1,4 @@
-variable VPC_NAME {}
+variable VPC_ID {}
 
 variable SOURCE_CIDRS {
   type = list
@@ -16,13 +16,6 @@ variable "TAGS" {
 
 data "aws_caller_identity" "current" {}
 
-data "aws_vpc" "main" {
-  filter {
-    name   = "tag:Name"
-    values = [var.VPC_NAME]
-  }
-}
-
 variable SUBNETS {
   type = list(string)
 }
@@ -32,7 +25,7 @@ variable SUBNETS {
 resource "aws_security_group" "lb" {
   name        = var.LB_NAME
   description = "controls access to the lb"
-  vpc_id      = data.aws_vpc.main.id
+  vpc_id      = var.VPC_ID
 
   tags = merge(
 		var.TAGS,
@@ -101,7 +94,7 @@ resource "aws_lb" "this" {
   load_balancer_type = "application"
   internal           = false
 
-  subnets         = [var.SUBNETS]
+  subnets         = var.SUBNETS
   security_groups = [aws_security_group.lb.id]
 
   access_logs {
