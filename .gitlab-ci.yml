@@ -159,6 +159,7 @@ run_terraform:
     - set -x
     #- export TF_VAR_CI_AWSENV=DEV
     #- export CI_AWSENV=DEV
+    - export TF_LOG=DEBUG
     - cd terraform/setup
     - runTerraformByComment
 
