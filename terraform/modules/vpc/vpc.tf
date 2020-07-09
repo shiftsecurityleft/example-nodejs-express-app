@@ -49,13 +49,13 @@ resource "aws_subnet" "private" {
   availability_zone = "${data.aws_availability_zones.available.names[count.index]}"
   vpc_id            = "${aws_vpc.main.id}"
 
-  tags = "${merge(
+  tags = merge(
 		var.TAGS,
-		map(
-			"Name","${var.VPC_NAME}-prv${count.index}",
-      "Tier", "private"
-		)
-	)}"
+		{
+			Name = "${var.VPC_NAME}-prv${count.index}"
+      Tier = "private"
+    }
+	)
 }
 
 # Create var.AZ_COUNT public subnets, each in a different AZ
@@ -66,13 +66,13 @@ resource "aws_subnet" "public" {
   vpc_id                  = "${aws_vpc.main.id}"
   map_public_ip_on_launch = true
 
-  tags = "${merge(
+  tags = merge(
 		var.TAGS,
-		map(
-			"Name","${var.VPC_NAME}-pub${count.index}",
-      "Tier", "public"
-		)
-	)}"
+		{
+			Name = "${var.VPC_NAME}-pub${count.index}"
+      Tier = "public"
+    }
+	)
 }
 
 resource "aws_subnet" "db" {
@@ -81,13 +81,13 @@ resource "aws_subnet" "db" {
   availability_zone = "${data.aws_availability_zones.available.names[count.index]}"
   vpc_id            = "${aws_vpc.main.id}"
 
-  tags = "${merge(
+  tags = merge(
 		var.TAGS,
-		map(
-			"Name","${var.VPC_NAME}-db${count.index}",
-      "Tier", "db"
-		)
-	)}"
+		{
+			Name = "${var.VPC_NAME}-db${count.index}"
+      Tier = "db"
+    }
+	)
 }
 
 # IGW for the public subnet
@@ -171,4 +171,9 @@ output "vpc_id" {
 output "vpc_name" {
   description = "The Name tag of the VPC instance"
   value       = "${aws_vpc.main.tags["Name"]}"
+}
+
+output "public_subnets" {
+  description = "The Name tag of the VPC instance"
+  value       = [ aws_subnet.public.*.id ]
 }

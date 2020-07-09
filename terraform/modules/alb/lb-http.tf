@@ -23,12 +23,8 @@ data "aws_vpc" "main" {
   }
 }
 
-data "aws_subnet_ids" "selected" {
-  vpc_id = data.aws_vpc.main.id
-
-  tags = {
-    Tier = "public"
-  }
+variable SUBNETS {
+  type = list(string)
 }
 
 # lb Security group
