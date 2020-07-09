@@ -2,12 +2,6 @@ variable FAMILY {
   default = "examples"
 }
 
-data "aws_iam_account_alias" "current" {}
-
-locals {
-  alias = "${lower(data.aws_iam_account_alias.current.account_alias)}"
-}
-
 module "vpc" {
   source = "../modules/vpc"
 
@@ -37,17 +31,3 @@ module "lb-ext" {
 
   TAGS = "${local.common_tags}"
 }
-
-/*
-module "s3_scan_results" {
-  source = "../modules/s3-secure"
-
-  BUCKET   = "${var.FAMILY}-scan-results-${local.alias}"
-  SSM_PATH = "/app/${var.FAMILY}/SCANRESULTSBUCKET"
-
-  ACL        = "private"
-  VERSIONING = "true"
-
-  TAGS = "${local.common_tags}"
-}
-*/
