@@ -4,16 +4,16 @@ variable VERSIONING_ENABLED {
   default = true
 }
 
-variable "TAGS" {
-  type = "map"
+variable TAGS {
+  type = map(string)
 }
 
 resource "aws_s3_bucket" "this" {
-  bucket = "${var.S3_BUCKET}"
+  bucket = var.S3_BUCKET
   acl    = "private"
 
   versioning {
-    enabled = "${var.VERSIONING_ENABLED}"
+    enabled = var.VERSIONING_ENABLE
   }
 
   lifecycle_rule {
@@ -43,26 +43,26 @@ resource "aws_s3_bucket" "this" {
     }
   }
 
-  tags = "${merge(
+  tags = merge(
 		var.TAGS,
-		map(
-			"Name","${var.S3_BUCKET}"
-		)
-	)}"
+		{
+			Name = var.S3_BUCKET
+    }
+	)
 }
 
 output "id" {
-  value = "${aws_s3_bucket.this.id}"
+  value = aws_s3_bucket.this.id
 }
 
 output "arn" {
-  value = "${aws_s3_bucket.this.arn}"
+  value = aws_s3_bucket.this.arn
 }
 
 output "fqdn" {
-  value = "${aws_s3_bucket.this.bucket_domain_name}"
+  value = aws_s3_bucket.this.bucket_domain_name
 }
 
 output "name" {
-  value = "${var.S3_BUCKET}"
+  value = var.S3_BUCKET
 }

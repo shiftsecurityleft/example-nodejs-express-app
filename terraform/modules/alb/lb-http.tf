@@ -1,7 +1,7 @@
 variable VPC_ID {}
 
 variable SOURCE_CIDRS {
-  type = list
+  type = list(string)
 }
 
 variable LB_NAME {}
@@ -10,13 +10,15 @@ variable LB_DNS_NAME {
   default = "wildcard"
 }
 
-variable "TAGS" {
+variable TAGS {
   type = map(string)
 }
 
 data "aws_caller_identity" "current" {}
 
-variable SUBNETS {}
+variable SUBNETS {
+  type = list(string)
+}
 
 # lb Security group
 # This is the group you need to edit if you want to restrict access to your application
@@ -92,7 +94,7 @@ resource "aws_lb" "this" {
   load_balancer_type = "application"
   internal           = false
 
-  subnets         = var.SUBNETS
+  subnets         = [ var.SUBNETS ]
   security_groups = [aws_security_group.lb.id]
 
   access_logs {
