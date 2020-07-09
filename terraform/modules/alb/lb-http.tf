@@ -75,7 +75,7 @@ data "aws_elb_service_account" "main" {}
 data "aws_iam_policy_document" "s3_lb_write" {
   policy_id = "s3_lb_write"
 
-  statement = {
+  statement {
     actions   = ["s3:PutObject"]
     resources = ["${module.s3_logs.arn}/${var.LB_NAME}-lb/*"]
 
