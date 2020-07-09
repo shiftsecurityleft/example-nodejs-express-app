@@ -87,7 +87,7 @@ data "aws_iam_policy_document" "s3_lb_write" {
 }
 
 module "s3_logs" {
-  source             = "../modules/s3"
+  source             = "../s3"
 
   S3_BUCKET          = "${var.LB_NAME}-logs-${data.aws_iam_account_alias.current.account_alias}"
   VERSIONING_ENABLED = false
