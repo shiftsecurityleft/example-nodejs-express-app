@@ -13,7 +13,7 @@ resource "aws_s3_bucket" "this" {
   acl    = "private"
 
   versioning {
-    enabled = var.VERSIONING_ENABLE
+    enabled = var.VERSIONING_ENABLED
   }
 
   lifecycle_rule {
