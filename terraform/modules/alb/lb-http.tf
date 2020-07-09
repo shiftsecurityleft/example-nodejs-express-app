@@ -14,7 +14,7 @@ variable "TAGS" {
   type = map(string)
 }
 
-data "aws_iam_account_alias" "current" {}
+data "aws_caller_identity" "current" {}
 
 data "aws_vpc" "main" {
   filter {
@@ -89,7 +89,7 @@ data "aws_iam_policy_document" "s3_lb_write" {
 module "s3_logs" {
   source             = "../s3"
 
-  S3_BUCKET          = "${var.LB_NAME}-logs-${data.aws_iam_account_alias.current.account_alias}"
+  S3_BUCKET          = "${var.LB_NAME}-logs-${data.aws_caller_identity.current.account_id}"
   VERSIONING_ENABLED = false
 
   TAGS = var.TAGS
