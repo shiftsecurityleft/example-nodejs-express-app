@@ -16,9 +16,7 @@ variable "TAGS" {
 
 data "aws_caller_identity" "current" {}
 
-variable SUBNETS {
-  type = list(string)
-}
+variable SUBNETS {}
 
 # lb Security group
 # This is the group you need to edit if you want to restrict access to your application
