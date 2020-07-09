@@ -1,4 +1,6 @@
-variable FAMILY {}
+variable FAMILY {
+  default = "examples"
+}
 
 data "aws_iam_account_alias" "current" {}
 
