@@ -94,7 +94,7 @@ resource "aws_lb" "this" {
   load_balancer_type = "application"
   internal           = false
 
-  subnets         = [ var.SUBNETS ]
+  subnets         = var.SUBNETS
   security_groups = [aws_security_group.lb.id]
 
   access_logs {
