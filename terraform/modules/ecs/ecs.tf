@@ -181,8 +181,13 @@ resource "aws_lb_listener_rule" "host_based_routing" {
     values = ["${var.APP_FULLNAME}.${var.DOMAIN}"]
   }
   */
+  
+  condition {
+    path_pattern {
+      values = ["/${var.APP_FULLNAME}/*"]
+    }
+  }
 
-  depends_on = [ aws_lb_listener_rule.status ]
 }
 
 ### ECS
