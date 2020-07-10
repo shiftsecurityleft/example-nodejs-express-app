@@ -23,6 +23,8 @@ variable APP_PORT {
   description = "Port exposed by the docker image to redirect traffic to"
 }
 
+
+
 variable APP_COUNT {
   description = "Number of docker containers to run"
 }
@@ -59,6 +61,38 @@ variable HEALTHCHECK_GRACE_PERIOD_SEC {
   default = 30
 }
 
+variable OIDC_AUTHENTICATION {
+  default = false
+}
+
+variable OIDC_CLIENT_SECRET {
+  default = "null"
+}
+
+variable OIDC_CLIENT_ID {
+  default = "null"
+}
+
+variable OIDC_ISSUER {
+  default = "null"
+}
+
+variable INTERNAL_ONLY {
+  default = false
+}
+
+variable INTERNAL_DOMAIN {
+  default = "null"
+}
+
+variable LB_EXT_POSTFIX {
+  default = "-ext"
+}
+
+variable SECURITYGROUP_EXT_POSTFIX {
+  default = "-ext"
+}
+
 variable AUTOSHUTDOWN {
   description = "Time to stay up from the start of provision 1.5h or 1h30m. The accepted units are m and h."
   default = "30m"
@@ -91,11 +125,11 @@ data "aws_subnet_ids" "private" {
 }
 
 data "aws_security_group" "lb" {
-  name = "${var.VPC_NAME}-ext"
+  name = "${var.VPC_NAME}${var.INTERNAL_ONLY ? "-int":"${var.SECURITYGROUP_EXT_POSTFIX}"}"
 }
 
 data "aws_lb" "main" {
-  name = "${var.VPC_NAME}-ext"
+  name = "${var.VPC_NAME}${var.INTERNAL_ONLY ? "-int":"${var.LB_EXT_POSTFIX}"}"
 }
 
 data "aws_lb_listener" "http" {
@@ -103,7 +137,12 @@ data "aws_lb_listener" "http" {
   port              = 80
 }
 
+locals {
+  DOMAIN = var.INTERNAL_ONLY ? var.INTERNAL_DOMAIN:var.DOMAIN
+}
+
 ### Security
+
 resource "aws_security_group_rule" "allow_http" {
   type                     = "ingress"
   from_port                = 80
@@ -181,11 +220,14 @@ resource "aws_lb_listener_rule" "status" {
 
   condition {
     field  = "host-header"
-    values = ["${var.APP_FULLNAME}.${var.DOMAIN}"]
+    values = ["${var.APP_FULLNAME}.${local.DOMAIN}"]
   }
 }
 
+# Provision only if OIDC_AUTHENTICATION is false
 resource "aws_lb_listener_rule" "host_based_routing" {
+  count = var.OIDC_AUTHENTICATION ? 0:1
+
   listener_arn = data.aws_lb_listener.http.arn
 
   #priority = 99
@@ -196,8 +238,40 @@ resource "aws_lb_listener_rule" "host_based_routing" {
   }
   condition {
     field  = "host-header"
-    values = ["${var.APP_FULLNAME}.${var.DOMAIN}"]
+    values = ["${var.APP_FULLNAME}.${local.DOMAIN}"]
   }
+  depends_on = [ aws_lb_listener_rule.status ]
+}
+
+# Provision only if OIDC_AUTHENTICATION is true
+resource "aws_lb_listener_rule" "host_based_routing_with_oidc" {
+  count = var.OIDC_AUTHENTICATION ? 1:0
+
+  listener_arn = data.aws_lb_listener.http.arn
+
+  action {
+    type = "authenticate-oidc"
+
+    authenticate_oidc {
+      authorization_endpoint = "${var.OIDC_ISSUER}/v1/authorize"
+      client_id              = var.OIDC_CLIENT_ID
+      client_secret          = var.OIDC_CLIENT_SECRET
+      issuer                 = var.OIDC_ISSUER
+      token_endpoint         = "${var.OIDC_ISSUER}/v1/token"
+      user_info_endpoint     = "${var.OIDC_ISSUER}/v1/userinfo"
+    }
+  }
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.app.arn
+  }
+
+  condition {
+    field  = "host-header"
+    values = ["${var.APP_FULLNAME}.${local.DOMAIN}"]
+  }
+
   depends_on = [ aws_lb_listener_rule.status ]
 }
 
@@ -347,7 +421,7 @@ output "lb_hostname" {
 }
 
 output "listener_http_url" {
-  value = "http://${var.APP_FULLNAME}.${var.DOMAIN}"
+  value = "http://${var.APP_FULLNAME}.${local.DOMAIN}"
 }
 
 output "subnets" {

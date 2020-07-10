@@ -5,26 +5,27 @@ applications:
       awsenv: DEV
       appenv: dev
       postfix: -${APP_BRANCH_UUID}
-      domain: sslnp1.aws.shiftsecurityleft.cloud
+      domain: example.shiftsecurityleft.cloud
     develop:
       branch: develop
       awsenv: DEV
       appenv: dev
-      domain: sslnp1.aws.shiftsecurityleft.cloud
+      postfix: -dev
+      domain: example.shiftsecurityleft.cloud
     release-qa:
       branch: release-qa
       awsenv: DEV
       appenv: qa
       postfix: -qa
-      domain: sslp1.aws.shiftsecurityleft.cloud
+      domain: example.shiftsecurityleft.cloud
     master-demo:
       branch: master-demo
       awsenv: DEV
       appenv: prod
       postfix: -demo
-      domain: sslp1.aws.shiftsecurityleft.cloud
+      domain: example.shiftsecurityleft.cloud
     master:
       branch: master
       awsenv: DEV
       appenv: prod
-      domain: sslp1.aws.shiftsecurityleft.cloud
+      domain: example.shiftsecurityleft.cloud
