@@ -342,7 +342,7 @@ output "listener_http_url" {
 */
 
 output "listener_http_url" {
-  value = "${var.APP_PROTOCOL}://${aws_lb.main.dns_name}"
+  value = "${var.APP_PROTOCOL}://${data.aws_lb.main.dns_name}/${var.APP_FULLNAME}"
 }
 
 output "subnets" {
