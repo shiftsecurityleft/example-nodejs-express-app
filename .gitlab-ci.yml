@@ -157,6 +157,8 @@ plan_terraform:
     #- export TF_VAR_CI_AWSENV=DEV
     #- export CI_AWSENV=DEV
     #- export TF_LOG=DEBUG
+    - export REMINDER=${REPO_BRANCH#*-}  # remove "tf-"
+    - export AWSENV=${REMINDER%%-*}
     - cd terraform/setup
     - doTerraform plan
 
@@ -174,14 +176,16 @@ apply_terraform:
     #- export TF_VAR_CI_AWSENV=DEV
     #- export CI_AWSENV=DEV
     #- export TF_LOG=DEBUG
+    - export REMINDER=${REPO_BRANCH#*-}  # remove "tf-"
+    - export AWSENV=${REMINDER%%-*}
     - cd terraform/setup
     - doTerraform apply
 
 destroy_terraform:
-  when: manual
   only:
     - /^tf-.*$/
   stage: deploy
+  when: manual
   environment:
     name: terraform/$CI_COMMIT_REF_NAME
     action: stop
