@@ -2,34 +2,37 @@ variable APP_UUID {}
 variable FAMILY {}
 variable APP_IMAGE {}
 variable APP_IMAGE_TAG {}
-variable DOMAIN {}
+variable DOMAIN {
+  default = ""
+}
+
 variable APP_FULLNAME {}
 variable APP_PREFIX {}
 
 module "ecs" {
   source = "../modules/ecs"
 
-  VPC_NAME      = "${var.FAMILY}"
-  DOMAIN        = "${var.DOMAIN}"
-  APP_UUID      = "${var.APP_UUID}"
-  APP_FULLNAME  = "${var.APP_FULLNAME}"
-  APP_IMAGE     = "${var.APP_IMAGE}"
-  APP_IMAGE_TAG = "${var.APP_IMAGE_TAG}"
-  ROLE_NAME     = "${var.APP_PREFIX}"
+  VPC_NAME      = var.FAMILY
+  DOMAIN        = var.DOMAIN
+  APP_UUID      = var.APP_UUID
+  APP_FULLNAME  = var.APP_FULLNAME
+  APP_IMAGE     = var.APP_IMAGE
+  APP_IMAGE_TAG = var.APP_IMAGE_TAG
+  ROLE_NAME     = var.APP_PREFIX
 
   AUTOSHUTDOWN    = "10m"
   APP_PROTOCOL    = "HTTP"
   APP_PORT        = "3000"
-  HEALTHCHECK_URI = "/status"
-  APP_COUNT       = "2"
+  HEALTHCHECK_URI = "/"
+  APP_COUNT       = "1"
   CPU             = "512"
   MEMORY          = "1024"
 
-  TAGS = "${local.common_tags}"
+  TAGS = local.common_tags
 
   #SECRETS = "${data.template_file.ssm.rendered}"
 
-  ENVIRONMENT = "${data.template_file.env.rendered}"
+  ENVIRONMENT = data.template_file.env.rendered
 }
 
 /*
@@ -46,13 +49,13 @@ data "template_file" "ssm" {
 */
 
 data "template_file" "env" {
-  template = "${file("${path.cwd}/envvars.json.tpl")}"
+  template = file("${path.cwd}/envvars.json.tpl")
 
   vars = {
-    REPO_COMMIT_HASH     = "${local.common_tags["REPO_COMMIT_HASH"]}"
+    REPO_COMMIT_HASH     = local.common_tags["REPO_COMMIT_HASH"]
   }
 }
 
 output "app_url" {
-  value = "${module.ecs.listener_http_url}"
+  value = module.ecs.listener_http_url
 }

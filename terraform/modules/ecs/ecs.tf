@@ -165,26 +165,6 @@ resource "aws_lb_target_group" "app" {
 	)
 }
 
-# Redirect all traffic from the lb to the target group
-resource "aws_lb_listener_rule" "status" {
-  listener_arn = data.aws_lb_listener.http.arn
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.app.arn
-  }
-
-  condition {
-    field  = "path-pattern"
-    values = [var.HEALTHCHECK_URI]
-  }
-
-  condition {
-    field  = "host-header"
-    values = ["${var.APP_FULLNAME}.${var.DOMAIN}"]
-  }
-}
-
 resource "aws_lb_listener_rule" "host_based_routing" {
   listener_arn = data.aws_lb_listener.http.arn
 
@@ -194,10 +174,14 @@ resource "aws_lb_listener_rule" "host_based_routing" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.app.arn
   }
+
+  /*
   condition {
     field  = "host-header"
     values = ["${var.APP_FULLNAME}.${var.DOMAIN}"]
   }
+  */
+
   depends_on = [ aws_lb_listener_rule.status ]
 }
 
@@ -346,8 +330,14 @@ output "lb_hostname" {
   value = data.aws_lb.main.dns_name
 }
 
+/*
 output "listener_http_url" {
   value = "http://${var.APP_FULLNAME}.${var.DOMAIN}"
+}
+*/
+
+output "listener_http_url" {
+  value = "${var.APP_PROTOCOL}://${aws_lb.main.dns_name}"
 }
 
 output "subnets" {

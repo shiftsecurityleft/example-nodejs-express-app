@@ -5,7 +5,6 @@ applications:
       awsenv: DEV
       appenv: dev
       postfix: -${APP_BRANCH_UUID}
-      domain: example.shiftsecurityleft.cloud
     develop:
       branch: develop
       awsenv: DEV
@@ -28,4 +27,3 @@ applications:
       branch: master
       awsenv: DEV
       appenv: prod
-      domain: example.shiftsecurityleft.cloud
