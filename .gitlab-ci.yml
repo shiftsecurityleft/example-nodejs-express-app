@@ -147,21 +147,35 @@ destroy_app:
       fi
 
 ## Running Terraform on tf-* branch 
-run_terraform:
+plan_terraform:
   only:
     - /^tf-.*$/
   stage: deploy
+  script:
+    #- export LOGGER_LVL=DEBUG
+    #- set -x
+    #- export TF_VAR_CI_AWSENV=DEV
+    #- export CI_AWSENV=DEV
+    #- export TF_LOG=DEBUG
+    - cd terraform/setup
+    - doTerraform plan
+
+apply_terraform:
+  only:
+    - /^tf-.*$/
+  stage: deploy
+  when: manual
   environment:
     name: terraform/$CI_COMMIT_REF_NAME
     on_stop: destroy_terraform
   script:
-    - export LOGGER_LVL=DEBUG
-    - set -x
+    #- export LOGGER_LVL=DEBUG
+    #- set -x
     #- export TF_VAR_CI_AWSENV=DEV
     #- export CI_AWSENV=DEV
-    - export TF_LOG=DEBUG
+    #- export TF_LOG=DEBUG
     - cd terraform/setup
-    - runTerraformByComment
+    - doTerraform apply
 
 destroy_terraform:
   when: manual
