@@ -54,5 +54,5 @@ data "template_file" "env" {
 }
 
 output "app_url" {
-  value = "${module.ecs.listener_https_url}"
+  value = "${module.ecs.listener_http_url}"
 }
