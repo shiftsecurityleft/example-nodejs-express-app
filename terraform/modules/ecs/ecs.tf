@@ -98,8 +98,6 @@ variable AUTOSHUTDOWN {
   default = "30m"
 }
 
-data "aws_iam_account_alias" "current" {}
-
 data "aws_vpc" "main" {
   filter {
     name   = "tag:Name"
