@@ -1,13 +1,13 @@
-variable "APP_PREFIX" {
+variable APP_PREFIX {
   description = "Name of the App"
 }
 
-variable "TAGS" {
-  type = "map"
+variable TAGS {
+  type = map(string)
 }
 
 resource "aws_iam_role" "ecstask" {
-  name        = "${var.APP_PREFIX}"
+  name        = var.APP_PREFIX
   description = "Role to be used by ECS Task Definition"
   path        = "/app/"
 
@@ -27,25 +27,25 @@ resource "aws_iam_role" "ecstask" {
 }
 EOF
 
-  tags = "${merge(
+  tags = merge(
 		var.TAGS,
-		map(
-			"Name","${var.APP_PREFIX}"
-		)
-	)}"
+		{
+			Name = var.APP_PREFIX
+    }
+	)
 }
 
 resource "aws_iam_role_policy_attachment" "AmazonECSTaskExecutionRolePolicy-attach" {
-  role       = "${aws_iam_role.ecstask.name}"
+  role       = aws_iam_role.ecstask.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 resource "aws_iam_role_policy_attachment" "AmazonSSMReadOnlyAccess-attach" {
-  role       = "${aws_iam_role.ecstask.name}"
+  role       = aws_iam_role.ecstask.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
 }
 
 resource "aws_iam_role_policy_attachment" "AWSXrayFullAccess-attach" {
-  role       = "${aws_iam_role.ecstask.name}"
+  role       = aws_iam_role.ecstask.name
   policy_arn = "arn:aws:iam::aws:policy/AWSXrayFullAccess"
 }
