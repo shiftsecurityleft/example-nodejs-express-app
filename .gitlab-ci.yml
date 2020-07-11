@@ -1,5 +1,5 @@
 #image: registry.gitlab.com/shiftsecurityleft/infrapipe/infrapipe-demo:v0.2
-image: registry.hub.docker.com/evsyk/infrapipe:v0.2.16
+image: registry.hub.docker.com/evsyk/infrapipe:v0.2.18
 
 before_script:
   - |
@@ -13,6 +13,7 @@ stages:
   - build
   - image-build
   - deploy
+  - destroy
   - test
 
 build_nodejs:
@@ -133,24 +134,26 @@ deploy_app:
   stage: deploy
   script:
     #- export TF_LOG=DEBUG
-    - deployEcs apply terraform/main
+    - cd terraform/main
+    - doTerraform apply 
 
 destroy_app:
   except:
     - /^tf-.*$/
-  stage: deploy
+  stage: destroy
   when: manual
   script:
+    - cd terraform/main
     - |
       if [[ -z ${BITBUCKET_PR_ID} ]] || ([[ ! -z ${BITBUCKET_PR_ID} ]] && [[ "$(getPostfixBasedOnBranchName)" = "-${APP_BRANCH_UUID}" ]]); then
-        deployEcs destroy terraform/main
+        doTerraform destroy
       fi
 
 ## Running Terraform on tf-* branch 
 plan_terraform:
   only:
     - /^tf-.*$/
-  stage: deploy
+  stage: test
   script:
     #- export TF_VAR_CI_AWSENV=DEV
     #- export CI_AWSENV=DEV
@@ -184,7 +187,7 @@ apply_terraform:
 destroy_terraform:
   only:
     - /^tf-.*$/
-  stage: deploy
+  stage: destroy
   when: manual
   environment:
     name: terraform/$CI_COMMIT_REF_NAME
