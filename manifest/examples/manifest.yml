@@ -4,7 +4,7 @@ applications:
     default: 
       awsenv: DEV
       appenv: dev
-      postfix: -${APP_BRANCH_UUID}
+      postfix: -${TF_VAR_APP_BRANCH_UUID}
     develop:
       branch: develop
       awsenv: DEV
