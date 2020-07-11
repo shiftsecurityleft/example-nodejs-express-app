@@ -1,5 +1,5 @@
 #image: registry.gitlab.com/shiftsecurityleft/infrapipe/infrapipe-demo:v0.2
-image: registry.hub.docker.com/evsyk/infrapipe:v0.2.18
+image: registry.hub.docker.com/evsyk/infrapipe:v0.2.19
 
 before_script:
   - |
