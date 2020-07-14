@@ -23,7 +23,7 @@ module "ecs" {
   AUTOSHUTDOWN    = "10m"
   APP_PROTOCOL    = "HTTP"
   APP_PORT        = "3000"
-  HEALTHCHECK_URI = "/"
+  HEALTHCHECK_URI = "/${var.APP_FULLNAME}"
   APP_COUNT       = "1"
   CPU             = "512"
   MEMORY          = "1024"
