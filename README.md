@@ -1,4 +1,4 @@
-# Demo AWS S3 bucket Terraform
+# Demo AWS S3 bucket Terraform TEST 2
 
 Include a sample Terraform which creates encrypted and private S3 bucket on AWS with logging enabled.
 
@@ -24,6 +24,12 @@ Include a sample Terraform which creates encrypted and private S3 bucket on AWS 
 1. S3 bucket for terraform state remote backend
 1. Add above S3 bucket name to SSM security/pipeline/<ENV>/AWS_TFSTATE_S3_BUCKET
 1. Add above S3 key to SSM security/pipeline/<ENV>/AWS_TFSTATE_S3_KEY
+
+
+## How to create a example app
+1, npx create-react-app app
+1. cd app
+1. npm install
 
 
 

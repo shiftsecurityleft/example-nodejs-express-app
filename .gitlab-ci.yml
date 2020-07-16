@@ -1,18 +1,24 @@
-#image: registry.gitlab.com/shiftsecurityleft/infrapipe/infrapipe-demo:v0.2
-image: registry.hub.docker.com/evsyk/infrapipe:latest
+image: registry.hub.docker.com/evsyk/infrapipe:v0.2
 
 before_script:
   - |
     [ -x "$(command -v terraform)" ] && terraform --version
+  - TEST_RESULTS=$(pwd)/test-results
+  - mkdir -p ${TEST_RESULTS}
+  - set -x
+  - source /root/bin/pipeline-library.sh
+  - export
 
 stages:
   - build
   - test
+  - image-build
   - deploy
+  - destroy
 
 build_nodejs:
-  only:
-    - /^feature\/.*$/
+  except:
+    - /^tf-.*$/
   stage: build
   # Cache modules in between jobs
   cache:
@@ -23,41 +29,40 @@ build_nodejs:
     - source /root/.nvm/nvm.sh
     - tlog INFO "MANIFEST_VER = ${MANIFEST_VER}"
     - |
-      nvm install 8.12.0
-      nvm use 8.12.0
+      nvm install 12
+      nvm use 12
+    - SCAN_RESULT=npmaudit-${REPO_NAME}-${REPO_BRANCH_ENCODED}-${REPO_COMMIT_HASH:0:7}-${PIPELINE_BUILD_NUM}.json        
     - cd app
     #- npm ci --cache .npm --prefer-offline
     - echo "${REPO_COMMIT_HASH}" > public/status
     - npm install -g cross-env
     - npm install
-    - SCAN_RESULT=npmaudit-${REPO_NAME}-${REPO_BRANCH_ENCODED}-${REPO_COMMIT_HASH:0:7}-${PIPELINE_BUILD_NUM}.json        
     - npm audit --json > ${SCAN_RESULT} || tlog INFO "Ignoring NPM vulnerabilities..."
     - yqc r ${SCAN_RESULT}
-    #- uploadScanResult ${SCAN_RESULT}
-    #- npm run test
-    - npm run build
-    #- npm test
-    #- ./node_modules/.bin/eslint src --ext .js --format junit -o ./artifacts/js-lint-results.xml
-    #- CI=true JEST_JUNIT_OUTPUT="./artifacts/jest-junit.xml" yarn test --testResultsProcessor=jest-junit
+    - ls -l
+    - mv ${SCAN_RESULT} ${TEST_RESULTS}/
   artifacts:
     paths:
-      - npmaudit-*.json
+      - app/build
+      - nginx.conf
+      - test-results/npmaudit-*.json
     expire_in: 1 week
 
 snyk_scan:
-  only:
-    - /^feature\/.*$/
+  except:
+    - /^tf-.*$/
   stage: test
   script:
+    - set -x
     - runScaScan app
+    - ls -l
+    - mv scascan-*.json ${TEST_RESULTS}/
   artifacts:
     paths:
-      - scascan-*.json
+      - test-results/scascan-*.json
     expire_in: 1 week
 
 #sonar_scan:
-#  only:
-#    - /^feature\/.*$/
 #  stage: test
 #  services:
 #    - docker:dind
@@ -73,13 +78,13 @@ snyk_scan:
 #    expire_in: 1 week
 
 code_quality:
-  only:
-    - /^feature\/.*$/
+  except:
+    - /^tf-.*$/
   stage: test
   image: docker:stable
   variables:
     DOCKER_DRIVER: overlay2
-    SP_VERSION: 0.85.6
+    SP_VERSION: 0.85.10
   allow_failure: true
   services:
     - docker:stable-dind
@@ -90,35 +95,97 @@ code_quality:
         --volume "$PWD":/code
         --volume /var/run/docker.sock:/var/run/docker.sock
         "registry.gitlab.com/gitlab-org/ci-cd/codequality:$SP_VERSION" /code
+    - ls -l
+    - mv gl-*.json ${TEST_RESULTS}/
   artifacts:
     reports:
-      codequality: gl-code-quality-report.json
+      codequality: test-results/gl-*.json
 
-run_terraform:
+# Deployment stages
+build_scan_upload_docker:
+  except:
+    - /^tf-.*$/
+  stage: image-build
+  services:
+    - docker:stable-dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"  
+  script:
+    - set -x
+    - export
+    - buildDockerImage
+    - uploadToEcrInTargetEnv
+
+deploy_app:
+  except:
+    - /^tf-.*$/
+  stage: deploy
+  script:
+    #- export TF_LOG=DEBUG
+    - cd terraform/main
+    - doTerraform apply 
+
+destroy_app:
+  except:
+    - /^tf-.*$/
+  stage: destroy
+  when: manual
+  script:
+    - cd terraform/main
+    - |
+      if [[ -z ${BITBUCKET_PR_ID} ]] || ([[ ! -z ${BITBUCKET_PR_ID} ]] && [[ "$(getPostfixBasedOnBranchName)" = "-${APP_BRANCH_UUID}" ]]); then
+        doTerraform destroy
+      fi
+
+## Running Terraform on tf-* branch 
+plan_terraform:
+  only:
+    - /^tf-.*$/
+  stage: test
+  script:
+    #- export TF_VAR_CI_AWSENV=DEV
+    #- export CI_AWSENV=DEV
+    #- export LOGGER_LVL=DEBUG
+    #- set -x
+    #- export TF_LOG=DEBUG
+    - export REMINDER=${REPO_BRANCH#*-}  # remove "tf-"
+    - export AWSENV=${REMINDER%%-*}
+    - cd terraform/setup
+    - doTerraform plan
+
+apply_terraform:
   only:
     - /^tf-.*$/
   stage: deploy
+  when: manual
   environment:
     name: terraform/$CI_COMMIT_REF_NAME
     on_stop: destroy_terraform
   script:
-    - export LOGGER_LVL=DEBUG
-    - set -x
+    #- export LOGGER_LVL=DEBUG
+    #- set -x
     #- export TF_VAR_CI_AWSENV=DEV
     #- export CI_AWSENV=DEV
-    - runTerraformByComment
+    #- export TF_LOG=DEBUG
+    - export REMINDER=${REPO_BRANCH#*-}  # remove "tf-"
+    - export AWSENV=${REMINDER%%-*}
+    - cd terraform/setup
+    - doTerraform apply
 
 destroy_terraform:
-  when: manual
   only:
     - /^tf-.*$/
-  stage: deploy
+  stage: destroy
+  when: manual
   environment:
     name: terraform/$CI_COMMIT_REF_NAME
     action: stop
   script:
     - export REMINDER=${REPO_BRANCH#*-}  # remove "tf-"
     - export AWSENV=${REMINDER%%-*}
+    - cd terraform/setup
     - doTerraform destroy
 
 

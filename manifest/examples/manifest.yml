@@ -1,0 +1,29 @@
+---
+applications:
+- deployment:
+    default: 
+      awsenv: DEV
+      appenv: dev
+      postfix: -${TF_VAR_APP_BRANCH_UUID}
+    develop:
+      branch: develop
+      awsenv: DEV
+      appenv: dev
+      postfix: -dev
+      domain: example.shiftsecurityleft.cloud
+    release-qa:
+      branch: release-qa
+      awsenv: DEV
+      appenv: qa
+      postfix: -qa
+      domain: example.shiftsecurityleft.cloud
+    master-demo:
+      branch: master-demo
+      awsenv: DEV
+      appenv: prod
+      postfix: -demo
+      domain: example.shiftsecurityleft.cloud
+    master:
+      branch: master
+      awsenv: DEV
+      appenv: prod
