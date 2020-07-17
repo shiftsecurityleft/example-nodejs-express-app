@@ -1,4 +1,4 @@
-image: registry.hub.docker.com/evsyk/infrapipe:v0.2
+image: registry.hub.docker.com/r/shiftsecurityleft/infrapipe:latest
 
 before_script:
   - |
