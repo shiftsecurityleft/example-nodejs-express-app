@@ -6,7 +6,7 @@ before_script:
   - TEST_RESULTS=$(pwd)/test-results
   - mkdir -p ${TEST_RESULTS}
   - set -x
-  - source /root/bin/pipeline-library.sh
+  - test -f /root/bin/pipeline-library.sh && source /root/bin/pipeline-library.sh
   - export
 
 stages:
