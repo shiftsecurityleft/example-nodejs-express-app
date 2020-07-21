@@ -1,4 +1,4 @@
-image: registry.hub.docker.com/r/shiftsecurityleft/infrapipe:latest
+image: shiftsecurityleft/infrapipe:latest
 
 before_script:
   - |
