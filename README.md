@@ -1,4 +1,4 @@
-# InfraPipe - Example App (Nodejs/Express)
+# Infrapipe - Example App (Nodejs/Express)
 
 Include a sample Terraform which creates encrypted and private S3 bucket on AWS with logging enabled.
 
