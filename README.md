@@ -11,7 +11,7 @@ Infrapipe is an opinionated pipeline that is configured to work with a specific 
 -   Infrastructure as Code (IaC) Platform = Terraform
 
 ## Before you start make sure you have following
--   Gitlab account
+-   Gitlab account w/personal access token (https recommended)
 -   AWS Account with temporary Administrator Role access
 -   Workstation with Git verison 2.2X or greater
 
