@@ -7,7 +7,7 @@ Infrapipe is an opionated pipeline that is configured to work with a specific CI
 -   Application Runtime = Dockerized Express Web Server with a HelloWorld app
 -   Cloud Hosting Platform = AWS
 -   Container Hosting Platform = AWS Elastic Container Service (ECS)
--   Ingress LoadBalancer = AWS ELB
+-   Ingress LoadBalancer = AWS Application Load Balancer (ALB)
 -   Infrastructure as Code (IaC) Platform = Terraform
 
 ## Quick Start Guide
