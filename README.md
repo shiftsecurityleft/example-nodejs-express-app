@@ -3,7 +3,7 @@
 Infrapipe is an opionated pipeline that is configured to work with a specific CI tool.  The intent is to make Engineers, Developers , and other enthusiasts quickly productive in deploying "known-good" application architectures into the most common cloud platform technologies.  The aspirational goal is to get folks to go from "git clone" to production as fast as possible.
 
 ## About - Example App (Nodejs/Express)
--   Continuos Integration (CI) Platform = Gitlab
+-   Continuous Integration (CI) Platform = Gitlab
 -   Application Runtime = Dockerized Express Web Server with a HelloWorld app
 -   Cloud Hosting Platform = AWS
 -   Container Hosting Platform = AWS Elastic Container Service (ECS)
