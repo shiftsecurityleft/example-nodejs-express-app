@@ -17,7 +17,7 @@ Infrapipe is an opinionated pipeline that is configured to work with a specific 
 
 ## Quick Start Guide
 
-## Run the pipeline to build the pipeline image
+## Run this cloudformation template to setup your AWS account for Infrapipe
 1. Clone the repo to your Gitlab account
 1. Launch the following CloudFormation template to create the pipeline user, roles, and S3 bucket for terraform state.  Take default values. [![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=InfraPipeSetup&templateURL=https://shiftsecurityleft-infrapipe-cf.s3.amazonaws.com/infrapipe/branch/master/cf-templates/infrapipe-setup.cfn.yaml) 
 1. Once the CF stack is completed, you can review resources that are created.
