@@ -10,6 +10,11 @@ Infrapipe is an opinionated pipeline that is configured to work with a specific 
 -   Ingress LoadBalancer = AWS Application Load Balancer (ALB)
 -   Infrastructure as Code (IaC) Platform = Terraform
 
+## Before you start make sure you have following
+-   Gitlab account
+-   AWS Account with temporary Administrator Role access
+-   Workstation with Git verions 2.2X or greater
+
 ## Quick Start Guide
 
 ## Run the pipeline to build the pipeline image
