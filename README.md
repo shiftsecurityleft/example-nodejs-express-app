@@ -13,7 +13,7 @@ Infrapipe is an opinionated pipeline that is configured to work with a specific 
 ## Before you start make sure you have following
 -   Gitlab account
 -   AWS Account with temporary Administrator Role access
--   Workstation with Git verions 2.2X or greater
+-   Workstation with Git verison 2.2X or greater
 
 ## Quick Start Guide
 
