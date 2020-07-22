@@ -1,6 +1,6 @@
 # Infrapipe - Example App (Nodejs/Express)
 
-Infrapipe is an opinionated pipeline that is configured to work with a specific CI tool.  The intent is to make Engineers, Developers , and other enthusiasts quickly productive in deploying "known-good" application architectures into the most common cloud platform technologies.  The aspirational goal is to get folks to go from "git clone" to production as fast as possible.
+Infrapipe is an opinionated pipeline that is configured to work with a specific CI tool.  The intent is to make Engineers, Developers , and other enthusiasts quickly productive in deploying "known-good" application architectures into the most common cloud platform technologies.  The aspirational goal is to have the experience of going from "git clone" to production as fast as possible.
 
 ## About - Example App (Nodejs/Express)
 -   Continuous Integration (CI) Platform = Gitlab
