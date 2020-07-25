@@ -3,5 +3,5 @@ families:
   - family: "examples"
     ssm_path: "app/examples"
     repos:
-      - repo: "example-nodejs-react-app"
+      - repo: "example-nodejs-express-app"
         app_prefix: "example-nodejs"
