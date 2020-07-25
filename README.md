@@ -27,7 +27,7 @@ Infrapipe is an opinionated pipeline that is configured to work with a specific 
    - DEV_AWS_SECRET_KEY = <secret key>
    - DEV_AWS_DEFAULT_REGION = <your AWS default region>
 
-## Deploy AWS Elastic Container Service (ECS) + Fargate SPOT Infrastructure
+## Deploy Infrastructure
 1. From the cloned repo dir, create a tf-DEV-setup branch
    git checkout -b tf-DEV-setup
 1. Push your new local branch to your gitlab account,
@@ -39,7 +39,7 @@ Infrapipe is an opinionated pipeline that is configured to work with a specific 
 1. Only after a successful pipeline "Plan" run, Click on the "Apply" step to execute the infrastructure build. If the "Apply" step ran successfully, it should be colored in green.
 1. Your Infrapipe built AWS ECS + Fargate SPOT Infrastructure is ready for application deployments
 
-## Deploy an application to your Infrapipe built AWS ECS + Fargate Infrastructure
+## Deploy an Application
 1. Checkout a new application release branch to initiate an application deployment, git checkout -b featureMyApp ; git push
 1. Set the remote branch as upstream when prompted,
    git push --set-upstream origin featureMyApp
