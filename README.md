@@ -11,15 +11,14 @@ Infrapipe is an opinionated pipeline that is configured to work with a specific 
 -   Infrastructure as Code (IaC) Platform = Terraform
 
 ## Before you start make sure you have following
--   Gitlab account w/personal access token (https recommended)
--   AWS Account with temporary Administrator Role access
--   Workstation with Git verison 2.2X or greater
-
+-   Gitlab account.
+-   AWS Account with temporary Administrator Role access.
+-   Workstation with Git verions 2.2X or greater installed
+-   Workstation with a text/code editor (example: vscode https://code.visualstudio.com/)
 ## Quick Start Guide
 
-## Run this cloudformation template to setup your AWS account for Infrapipe
+## Setup your Gitlab Account and workstation for Infrapipe
 1. Clone the repo to your Gitlab account
-1. Log into your AWS Account Console on your web browser
 1. Launch the following CloudFormation template to create the pipeline user, roles, and S3 bucket for terraform state.  Take default values. [![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=InfraPipeSetup&templateURL=https://shiftsecurityleft-infrapipe-cf.s3.amazonaws.com/infrapipe/branch/master/cf-templates/infrapipe-setup.cfn.yaml) 
 1. Once the CF stack is completed, you can review resources that are created.
 1. In AWS CloudFormation console, go to resources -> click on the user created -> IAM users/terraform -> security credentials, and create a Access key
@@ -27,10 +26,25 @@ Infrapipe is an opinionated pipeline that is configured to work with a specific 
    - DEV_AWS_ACCESS_KEY = <access key>
    - DEV_AWS_SECRET_KEY = <secret key>
    - DEV_AWS_DEFAULT_REGION = <your AWS default region>
+
+## Deploy AWS Elastic Container Service (ECS) + Fargate SPOT Infrastructure
 1. From the cloned repo dir, create a tf-DEV-setup branch
    git checkout -b tf-DEV-setup
+1. Push your new local branch to your gitlab account,
+   git push
+1. Set the remote branch as upstream when prompted,
+   git push --set-upstream origin tf-DEV-setup
+1. Be ready to provide your gitlab userid and personal access token when prompted.
+1. When pushed successfully, check your gitlab account to see if your new branch has been pushed and if the pipeline "plan" step has started.
+1. Only after a successful pipeline "Plan" run, Click on the "Apply" step to execute the infrastructure build. If the "Apply" step ran successfully, it should be colored in green.
+1. Your Infrapipe built AWS ECS + Fargate SPOT Infrastructure is ready for application deployments
 
-
+## Deploy an application to your Infrapipe built AWS ECS + Fargate Infrastructure
+1. Checkout a new application release branch to initiate an application deployment, git checkout -b featureMyApp ; git push
+1. Set the remote branch as upstream when prompted,
+   git push --set-upstream origin featureMyApp
+1. Check your gitlab account for the new branch and the execution of the pipeline.
+1. Application deployments have different pipeline steps that you will see in your Gitlab account. Your application has been successfully deployed once it completes the deployment step. You can find your application deployment url at the end of the log of the pipeline run.
 
 
 ## Authors
