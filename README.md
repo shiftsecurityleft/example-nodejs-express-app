@@ -48,18 +48,18 @@ Infrapipe is an opinionated pipeline that is configured to work with a specific 
 
 # How to uninstall
 
-## Undeploy the application
+## Uninstall the application
 1. Navigate to the Pipelines section of Gitlab and locate the branch you created in the previous step
 1. Select the Destroy App step in the pipeline and execute it.
 
 
-## Undeploy the infrastructure
+## Uninstall the infrastructure
 1. Navigate to the Pipelines section of Gitlab and locate the branch "tf-DEV-setup" you created in the previous step
 1. Select the Destroy Terraform step in the pipeline and execute it.
 1.    Please note that you may need to empty the AWS ALB S3 log bucket that was created to successfully deploy.Don't worry if the pipeline run fails because the bucket was not empty.  Just empty the bucket and rerun the destroy step of the pipeline
 
 
-## Undeploy the InfraPipe Setup
+## Uninstall the InfraPipe Setup
 1. Navigate to AWS Cloudformation Service and locate the Infrapipe Stack
 1. Take the action to delete the stack.
 1. Please note that you will want to ensure that you have undeployed all your apps and infrastructure as mentioned in previous steps.  Additionally, you will want to make sure that the tfstate bucket in your AWS account is also emptied in order to successfully run the delete stack operation. If the operation fails because the bucket was not empty, no worries.  Just empty the bucket and rerun the delete operation.
