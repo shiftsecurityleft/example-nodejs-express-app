@@ -24,7 +24,7 @@ This example includes:
 Before you start please have the following:
 -   Gitlab account
 -   AWS account with ability to creates IAM access/secret keys
-   -- Note: Example will create a new VPC
+   -  Note: Example will create a new VPC
 -   Workstation with [Git](https://git-scm.com/downloads) version 2.2X or greater installed
 -   Workstation with a text/code editor (example: vscode https://code.visualstudio.com/)
 
@@ -36,22 +36,22 @@ Before you start please have the following:
 1. Import the [Github](https://github.com/shiftsecurityleft/example-nodejs-express-app.git) repo into a new project in your Gitlab account
 [![import-project.jpg](https://i.postimg.cc/Fs1RWkng/import-project.jpg)](https://postimg.cc/KRSx4jbR)
 1. Launch the following CloudFormation template to create the pipeline user, roles, and S3 bucket for terraform state.
-   -- This will launch the AWS console
-   -- Note the region (e.g. us-east-1, us-west-1)
-   -- Take default values
+   -  This will launch the AWS console
+   -  Note the region (e.g. us-east-1, us-west-1)
+   -  Take default values
 [![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=InfraPipeSetup&templateURL=https://shiftsecurityleft-infrapipe-cf.s3.amazonaws.com/infrapipe/branch/master/cf-templates/infrapipe-setup.cfn.yaml) 
 1. Once the Cloud Formation stack is completed, you can review resources that are created in the console.
 1. In AWS CloudFormation console:
-   -- Go to the Resources tab 
-   -- Click on the user created which will open the IAM console for the "terraform" user
-   -- Click on the Security credentials tab
-   -- Click on Create Access key (***Note: Keep this information in a secure location and NEVER share it with anyone***)
+   -  Go to the Resources tab 
+   -  Click on the user created which will open the IAM console for the "terraform" user
+   -  Click on the Security credentials tab
+   -  Click on Create Access key (***Note: Keep this information in a secure location and NEVER share it with anyone***)
 1. Add the following variables into GitLab's project variables
-   -- Go back to your Gitlab project
-   --  Hover over Settings
-   -- Click on CI/CD
-   -- Expand the Variables section
-   -- Click on Add Variable
+   -  Go back to your Gitlab project
+   -  Hover over Settings
+   -  Click on CI/CD
+   -  Expand the Variables section
+   -  Click on Add Variable
 [![gitlab-variables.jpg](https://i.postimg.cc/y6r0C3b8/gitlab-variables.jpg)](https://postimg.cc/WtgdMzVB)
 - Add the following 3 variables
    - DEV_AWS_ACCESS_KEY = ACCESS_KEY
@@ -60,15 +60,15 @@ Before you start please have the following:
    - DEV_AWS_DEFAULT_REGION = AWS_REGION
       -  ***Note: Region should be in all lower case (e.g. us-east-1, us-west-2)***
 6. Create a Gitlab Personal Access Token
-   --  Click on profile upper right hand corner drop down
-   --  Under User Settings click on Access Tokens
-   --  Provide a name for token
-   --  Choose appropriate scope
-   --  Save token in secure location
+   -  Click on profile upper right hand corner drop down
+   -  Under User Settings click on Access Tokens
+   -  Provide a name for token
+   -  Choose appropriate scope
+   -  Save token in secure location
 
 ## Deploy Infrastructure
 1. Clone Gitlab repo to your local machine
--- Be ready to provide your Gitlab userid and personal access token (created from above) when prompted
+   -  Be ready to provide your Gitlab userid and personal access token (created from above) when prompted
    ```sh
    git clone https://gitlab.com/<login>/example-nodejs-express-app.git
    cd example-nodejs-express-app
@@ -87,12 +87,12 @@ Before you start please have the following:
    git push --set-upstream origin tf-DEV-setup
    ```
 1. When pushed successfully, check your Gitlab account to see if your new branch has been pushed and if the pipeline "plan_terraform" step has started.
-   --  Go to Gitlab
-   --  Under the example project click on CI / CD
-   --  Click on Pipelines
-   --  Click on "plan_terraform" button to see the status output
+   -  Go to Gitlab
+   -  Under the example project click on CI / CD
+   -  Click on Pipelines
+   -  Click on "plan_terraform" button to see the status output
 1. Only after a successful pipeline "plan_terraform" run (green checkbox), ***Click on the "apply_terraform" step*** to execute the infrastructure build (play button).
-   -- This is a manual step purposely to allow you to review the plan before executing the apply
+   -  This is a manual step purposely to allow you to review the plan before executing the apply
 1. Upon successful apploy your Infrapipe built AWS ECS + Fargate SPOT Infrastructure is ready for application deployments
 
 ## Deploy an Application
@@ -109,8 +109,8 @@ Before you start please have the following:
 1. Application deployments have different pipeline steps, including code quality and Source Code Analysis (SCA) that you will see in your Gitlab account
 1. Your application has been successfully deployed once it completes the deployment step
 1. You can find your application deployment url at the end of the log of the pipeline run
-   -- ***Note: Add a trailing "/" to the end of the URL into the browser***
-   -- ***Note: Fargate instance is set to auto shutdown after 10m to save costs.  This is configurable in the ecs-app.tf file***
+   -  ***Note: Add a trailing "/" to the end of the URL into the browser***
+   -  ***Note: Fargate instance is set to auto shutdown after 10m to save costs.  This is configurable in the ecs-app.tf file***
 
 ### Making Changes
 1. If you wanted to make changes to infrastructure or the app you would make them in your IDE in your Gitlab repo
