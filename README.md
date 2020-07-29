@@ -54,11 +54,11 @@ Before you start please have the following:
 -- Click on Add Variable
 [![gitlab-variables.jpg](https://i.postimg.cc/y6r0C3b8/gitlab-variables.jpg)](https://postimg.cc/WtgdMzVB)
 - Add the following 3 variables
-   - DEV_AWS_ACCESS_KEY = <access key>
-   - DEV_AWS_SECRET_KEY = <secret key>
-   -- **Note: AWS_SECRET_KEY should be masked**
-   - DEV_AWS_DEFAULT_REGION = <your AWS default region>
-   -- **Note: Region should be in all lower case (e.g. us-east-1, us-west-2)**
+   - DEV_AWS_ACCESS_KEY = ACCESS_KEY
+   - DEV_AWS_SECRET_KEY = SECRET_KEY
+      -  ***Note: AWS_SECRET_KEY should be masked***
+   - DEV_AWS_DEFAULT_REGION = AWS_REGION
+      -  ***Note: Region should be in all lower case (e.g. us-east-1, us-west-2)***
 6. Create a Gitlab Personal Access Token
 --  Click on profile upper right hand corner drop down
 --  Under User Settings click on Access Tokens
