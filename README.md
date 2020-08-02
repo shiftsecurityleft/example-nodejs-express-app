@@ -119,6 +119,9 @@ Before you start please have the following:
    git commit -am "<description of change>"
    git push
    ```
+   
+### Helpful Videos
+1. [Infrapipe - Manage Deployments](https://youtu.be/CITh9X1BIgw)
 ## Authors
 
 Module managed by [ShiftSecurityLeft](https://shiftsecurityleft.io).
