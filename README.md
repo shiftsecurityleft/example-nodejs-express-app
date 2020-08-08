@@ -1,6 +1,6 @@
 # Infrapipe
 
-Main documentation can be found here <a href="https://infrapipe.readme.io/docs" target="_blank">https://infrapipe.readme.io/docs</a>
+Main documentation can be found here <a href="https://infrapipe.shiftsecurityleft.io/docs" target="_blank">https://infrapipe.shiftsecurityleft.io/docs</a>
 
 > <a href="https://youtu.be/ULkwybfK9As" target="_blank">Overview Video</a>
 > 
