@@ -32,11 +32,11 @@ Managing infrastructure and deploying applications, even in the cloud, in a trad
 
 > SASSE
 >
-> Simple 
-> Automated 
-> Secure
-> Sustainable
-> Evidenced
+> * Simple 
+> * Automated 
+> * Secure
+> * Sustainable
+> * Evidenced
 
 Being SASSE means:
 * Having a simple central platform that deploys code and infrastructure in one process.  
