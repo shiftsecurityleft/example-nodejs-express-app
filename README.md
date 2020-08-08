@@ -44,3 +44,6 @@ Being SASSE means:
 * Being secure from the start means making risk, audit and governance teams happy you are meeting their controls from initial push to dev
 * Having a sustainable solution which won't increase your IT, DevOps, SRE workforce when the number of applications increase or the frequency of deployment increases.
 * Knowing that you are doing what you say you do and having the evidence to back it up when audit time comes.
+
+## Quick start guide
+Link to the <a href="https://infrapipe.shiftsecurityleft.io/docs/getting-started" target="_blank">quick start guide</a>
