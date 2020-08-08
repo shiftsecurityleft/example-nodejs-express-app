@@ -6,6 +6,7 @@ Main documentation can be found here <a href="https://infrapipe.readme.io/docs" 
 > 
 > This video will tell you more about what we are about
 
+## What is Infrapipe?
 Infrapipe is an open source, end-to-end, right out of the box, secure DevOps platform that you can control and deploy in your own cloud provider.  It is the center of achieving all the goodness of an enterprise secure solution but also the agility and speed a start-up needs.
 
 Infrapipe combines the power of code and infrastructure being deployed from one repository to allow developers to make strategic infrastructure changes along with their application code to enhance productivity.
@@ -16,7 +17,7 @@ The intent is to make Engineers, Developers, and other enthusiasts quickly produ
 
 The goal is to have the experience of going from "git clone" to production as fast, as secure and as compliant as possible.
 
-###What problems does it solve?
+##What problems does it solve?
 Managing public cloud provider infrastructure the right way is really hard and constantly changing.  There are many ways to deploy applications but how to do you ensure you aren't doing it in an inefficient, slow, inconsistent, insecure and difficult to maintain way?  
 
 > Infrapipe was designed to allow you to avoid all of the questions, just focus on developing your application and use known secure patterns to deliver code
@@ -27,7 +28,7 @@ Managing infrastructure and deploying applications, even in the cloud, in a trad
 
 > Your mindset needs to be **SASSE**...Infrapipe will unlock your SASSEness
 
-###Why do you want to be SASSE?
+##Why do you want to be SASSE?
 
 > SASSE
 >
