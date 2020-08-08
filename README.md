@@ -17,7 +17,7 @@ The intent is to make Engineers, Developers, and other enthusiasts quickly produ
 
 The goal is to have the experience of going from "git clone" to production as fast, as secure and as compliant as possible.
 
-##What problems does it solve?
+## What problems does it solve?
 Managing public cloud provider infrastructure the right way is really hard and constantly changing.  There are many ways to deploy applications but how to do you ensure you aren't doing it in an inefficient, slow, inconsistent, insecure and difficult to maintain way?  
 
 > Infrapipe was designed to allow you to avoid all of the questions, just focus on developing your application and use known secure patterns to deliver code
@@ -28,7 +28,7 @@ Managing infrastructure and deploying applications, even in the cloud, in a trad
 
 > Your mindset needs to be **SASSE**...Infrapipe will unlock your SASSEness
 
-##Why do you want to be SASSE?
+## Why do you want to be SASSE?
 
 > SASSE
 >
