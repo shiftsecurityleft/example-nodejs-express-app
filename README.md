@@ -24,7 +24,7 @@ Managing public cloud provider infrastructure the right way is really hard and c
 
 How do you allow developers manage infrastructure with code without breaking critical underlying components and accessing areas they don’t need to perform their job?
 
-> Infrapipe doesn't isolate the developer, it empowers them to work quickly within a set of guide rails that doesn't give them direct access to the production environment.
+> Infrapipe doesn't isolate the developer, it empowers them to work quickly within a set of guide rails while not compromising underlying infrastructure or assets not needed to perform their daily job.
 
 Managing infrastructure and deploying applications, even in the cloud, in a traditional manner will only meet meet short business objectives but will it severely limit the ability to scale and grow your mission.
 
@@ -32,11 +32,11 @@ Managing infrastructure and deploying applications, even in the cloud, in a trad
 
 ## What does it mean to be SASSE?
 
->> Simple - Infrapipe gives you a simple central platform that deploys code and infrastructure in one process.
->> Automated - With Infrapipe codifying everything and doing it in an automated way that can be repeated consistently in any environment.
->> Secure - Infrapipe forces you to be secure from the start means making risk, audit and governance teams happy you are meeting their controls from initial push to dev.
->> Sustainable - Infrapipe is a sustainable solution which won't increase your IT, DevOps, SRE workforce when the number of applications increase or the frequency of deployment increases.
->> Evidenced - With Infrapipe handling all the orchestration you will know that you are doing what you say you do and having the evidence to back it up when audit time comes.
+* Simple - Infrapipe gives you a simple central platform that deploys code and infrastructure in one process.
+* Automated - With Infrapipe codifying everything and doing it in an automated way that can be repeated consistently in any environment.
+* Secure - Infrapipe forces you to be secure from the start means making risk, audit and governance teams happy you are meeting their controls from initial push to dev.
+* Sustainable - Infrapipe is a sustainable solution which won't increase your IT, DevOps, SRE workforce when the number of applications increase or the frequency of deployment increases.
+* Evidenced - With Infrapipe handling all the orchestration you will know that you are doing what you say you do and having the evidence to back it up when audit time comes.
 
 ## Quick start guide
 Link to the <a href="https://infrapipe.shiftsecurityleft.io/docs/getting-started" target="_blank">quick start guide</a>
